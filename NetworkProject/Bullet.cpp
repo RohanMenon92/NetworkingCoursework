@@ -16,3 +16,8 @@ void Bullet::ClientUpdate(sf::Time dt)
 {
 	shape.move(velocity * dt.asSeconds());
 }
+
+sf::CircleShape Bullet::GetShape()
+{
+	return shape;
+}

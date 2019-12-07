@@ -357,7 +357,9 @@ void Client::SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f ve
 	bullet->bulletID = bulletID;
 	bullet->shape.setPosition(pos);
 	bullet->velocity = velocity;
+	std::cout << "[SPAWN___BULLET] Bullet is being added " << bulletID << std::endl;
 	bullets.insert(std::make_pair(bulletID, bullet.get()));
+	std::cout << "[SPAWN___BULLET] Bullet is being added " << bulletID << std::endl;
 	//pendingBullets.insert(std::pair<std::string, Bullet*>(bulletID, bullet));
 }
 

@@ -141,9 +141,9 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	for (Player* playerBox : renderGame.playerBoxes) {
 		sf::Packet packet;
 
-		packet << NetworkValues::RENDER_PLAYER //<< packetId
+		packet << NetworkValues::RENDER_PLAYER << packetId
 			<< playerBox->playerID
-			<< playerBox->shape.getPosition().x << playerBox->shape.getPosition().y
+			<< playerBox->GetShape().getPosition().x << playerBox->GetShape().getPosition().y
 			<< playerBox->velocity.x << playerBox->velocity.y 
 			<< playerBox->aimAt.x << playerBox->aimAt.y
 			<< playerBox->health

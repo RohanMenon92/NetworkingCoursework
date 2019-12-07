@@ -19,6 +19,16 @@ Player::Player() :
 	aimShape.setOrigin(5.f, 5.f);
 }
 
+sf::CircleShape Player::GetShape()
+{
+	return shape;
+}
+
+sf::CircleShape Player::GetAimShape()
+{
+	return aimShape;
+}
+
 void Player::Update(sf::Time dt)
 {
 	if (canAttackTimer > 0.f) {

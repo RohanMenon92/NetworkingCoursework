@@ -90,16 +90,13 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 	for (auto playerPair : (*playersPtr))
 	{
 		Player* player = playerPair.second;
-		Multithreading::renderMutex.lock();
 		player->ClientUpdate(dt);
-		Multithreading::renderMutex.unlock();
 	}
 
 	for (auto bulletPair : (*bulletsPtr))
 	{
 		Bullet* bullet = bulletPair.second;
 
-		Multithreading::renderMutex.lock();
 		bullet->ClientUpdate(dt);
 		sf::Vector2f bulletPos = bullet->shape.getPosition();
 		if (bulletPos.x < 0 || bulletPos.x > window->getSize().x
@@ -107,8 +104,6 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 		{
 			DespawnBullet(bullet->bulletID);
 		}
-		Multithreading::renderMutex.unlock();
-
 	}
 	//Multithreading::renderMutex.unlock();
 	std::cout << "[GAME ] Update DONE " << std::endl;
@@ -120,31 +115,25 @@ void Game::Render(std::map<std::string, Player*>& playerPointer, std::map<std::s
 	bulletsPtr = &bulletPointer;
 
 	window->clear();
-	Multithreading::renderMutex.lock();
 
 	std::cout << "[GAME ] Render Called " << std::endl;
-
-	//std::cout << "[CLIENT GAME] RENDER " << std::endl;
 
 	// Render Player Boxes
 	for (auto playerPair : (*playersPtr))
 	{
-		std::cout << "[GAME ] TRYING TO RENDER " << std::endl;
-		//Player* player = playerPair.second;
-		//window->draw(player->shape);
-		//window->draw(player->aimShape);
-		std::cout << "[GAME ] RENDER DONE " << std::endl;
+		Player* player = playerPair.second;
+		window->draw(player->GetShape());
+		window->draw(player->GetAimShape());
 	}
 
 	////// Render Player Bullets
 	for (auto bulletPair : (*bulletsPtr))
 	{
 		Bullet* bullet = bulletPair.second;
-		window->draw(bullet->shape);
+		window->draw(bullet->GetShape());
 	}
 
 	std::cout << "[GAME ] Render Done " << std::endl;
-	Multithreading::renderMutex.unlock();
 	window->display();
 
 }

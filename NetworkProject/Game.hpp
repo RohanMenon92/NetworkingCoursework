@@ -12,7 +12,6 @@
 #include <ResourceIdentifier.hpp>
 #include <PlayerBox.hpp>
 #include <Bullet.hpp>
-#include <Multithreading.hpp>
 
 #include <iostream>
 #include <fstream>

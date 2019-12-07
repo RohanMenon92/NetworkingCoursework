@@ -36,7 +36,7 @@ sf::Vector2f RenderGame::OnSocketConnect(ClientRef* clientRef)
 
 void RenderGame::OnPlayerConnect(std::string username, Player* playerBox)
 {
-	std::cout << "OnPlayerConnect:" << playerBox->shape.getPosition().x << " " << playerBox->shape.getPosition().y << std::endl;
+	std::cout << "OnPlayerConnect:" << playerBox->GetShape().getPosition().x << " " << playerBox->GetShape().getPosition().y << std::endl;
 	playerBox->playerID = username;
 }
 
@@ -146,14 +146,13 @@ void RenderGame::Render()
 
 	// Render Player Boxes
 	for (Player* playerBox : playerBoxes) {
-		mWindow->draw(playerBox->shape);
-		mWindow->draw(playerBox->aimShape);
+		mWindow->draw(playerBox->GetShape());
+		mWindow->draw(playerBox->GetAimShape());
 	}
 	// Render Player Bullets
 	for (Bullet* bullet : bullets) {
-		mWindow->draw(bullet->shape);
+		mWindow->draw(bullet->GetShape());
 	}
-
 	mWindow->display();
 }
 

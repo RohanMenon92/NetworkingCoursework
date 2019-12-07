@@ -38,6 +38,9 @@ public:
 	void SetAimPos(sf::Vector2f aimAt);
 	Player();
 
+	sf::CircleShape GetShape();
+	sf::CircleShape GetAimShape();
+
 protected:
 
 private:

@@ -19,5 +19,7 @@ public:
 
 	void Update(sf::Time dt);
 	void ClientUpdate(sf::Time dt);
+
+	sf::CircleShape GetShape();
 };
 #endif
