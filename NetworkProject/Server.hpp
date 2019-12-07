@@ -14,7 +14,6 @@
 #include <SFML/Graphics.hpp>
 
 #include <ServerConfiguration.hpp>
-#include <MultiThreading.hpp>
 #include <NetworkValues.hpp>
 
 #include <RenderGame.hpp>

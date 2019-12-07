@@ -25,7 +25,7 @@ void Server::ExecutionThread()
 {
 	sf::Time stepInterval = sf::seconds(1.f / 60.f);
 	sf::Time stepTime = sf::Time::Zero;
-	sf::Time tickInterval = sf::seconds(1.f / 20.f);
+	sf::Time tickInterval = sf::seconds(1.f / 10.f);
 	sf::Time tickTime = sf::Time::Zero;
 	sf::Clock stepClock, tickClock;
 
@@ -84,9 +84,9 @@ void Server::Init()
 	m_gameUdpSocket.bind(ServerConfiguration::GameUDPPort);
 	m_gameUdpSocket.setBlocking(false);
 
-	Multithreading::outputMutex.lock();
+	//Multithreading::outputMutex.lock();
 	std::cout << "[GAME_SERVER] Has been inited!" << std::endl;
-	Multithreading::outputMutex.unlock();
+	//Multithreading::outputMutex.unlock();
 
 	mThread.launch();
 
@@ -138,11 +138,13 @@ void Server::ReceiveInputFromSocket()
 
 void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	unsigned long long packetId = client->lastPacketIdSent;
-	packetId++;
 
+	client->lastPacketIdSent++;
 	for (Player* playerBox : renderGame.playerBoxes) {
 		sf::Packet packet;
-		packet << NetworkValues::RENDER_PLAYER << packetId 
+
+		packet << NetworkValues::RENDER_PLAYER << packetId
+			<< playerBox->playerID
 			<< playerBox->shape.getPosition().x << playerBox->shape.getPosition().y
 			<< playerBox->velocity.x << playerBox->velocity.y 
 			<< playerBox->aimAt.x << playerBox->aimAt.y
@@ -154,7 +156,9 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 
 	for (Bullet* bullet : renderGame.bullets) {
 		sf::Packet packet;
+
 		packet << NetworkValues::RENDER_BULLET << packetId
+			<< bullet->bulletID
 			<< bullet->shape.getPosition().x << bullet->shape.getPosition().y
 			<< bullet->velocity.x << bullet->velocity.y;
 
@@ -191,10 +195,10 @@ std::vector<ClientRef*>* Server::GetClients()
 
 void Server::Shutdown()
 {
-	Multithreading::outputMutex.lock();
+	//Multithreading::outputMutex.lock();
 	std::cerr << "[GAME_SERVER] Disconnecting everybody..." << std::endl;
 	std::cerr << "[GAME_SERVER] Stopping server..." << std::endl;
-	Multithreading::outputMutex.unlock();
+	//Multithreading::outputMutex.unlock();
 
 	// Disconnect everyone.
 	for (ClientRef* client : m_clients)
@@ -203,9 +207,9 @@ void Server::Shutdown()
 	}
 	m_isRunning = false;
 
-	Multithreading::outputMutex.lock();
+	//Multithreading::outputMutex.lock();
 	std::cerr << "[GAME_SERVER] Server stopped." << std::endl;
-	Multithreading::outputMutex.unlock();
+	//Multithreading::outputMutex.unlock();
 }
 
 void Server::DisconnectPlayer(ClientRef* clientRef, std::string reason)
@@ -226,9 +230,9 @@ void Server::DisconnectPlayer(ClientRef* clientRef, std::string reason)
 	}
 	catch (std::exception& e)
 	{
-		Multithreading::outputMutex.lock();
+		//Multithreading::outputMutex.lock();
 		std::cerr << "[GAME_SERVER][ERROR] " << e.what() << std::endl;
-		Multithreading::outputMutex.unlock();
+		//Multithreading::outputMutex.unlock();
 	}
 }
 
@@ -311,89 +315,87 @@ void Server::ReceiveThroughTCP()
 
 				switch (networkCode)
 				{
-					case NetworkValues::CONNECT:
-					{
-						std::string username;
-						unsigned short udpPort;
-						packet >> username >> udpPort;
+				case NetworkValues::CONNECT:
+				{
+					std::string username;
+					unsigned short udpPort;
+					packet >> username >> udpPort;
 
-						client->clientName = username;
+					client->clientName = username;
+					client->udpPort = udpPort;
 
-						std::cout << "TCP PORT CONNECT :: udpSocket:" << udpPort;
+					// Make connection to udp send
 
-						// Make connection to udp send
-						client->udpPort = udpPort;
+					renderGame.OnPlayerConnect(username, playerBox);
+					client->gameUdpSocket.setBlocking(false);
 
-						renderGame.OnPlayerConnect(username, *playerBox);
-						client->gameUdpSocket.setBlocking(false);
+					//// Send Player Spawn event to all tcp clients Can be simplified
+					//for (auto sendClientItr(m_clients.begin()); sendClientItr != m_clients.end();)
+					//{
+					//	ClientRef* sendClient = (*sendClientItr);
+					//	sf::Packet sendPacket;
 
-						//// Send Player Spawn event to all tcp clients Can be simplified
-						//for (auto sendClientItr(m_clients.begin()); sendClientItr != m_clients.end();)
-						//{
-						//	ClientRef* sendClient = (*sendClientItr);
-						//	sf::Packet sendPacket;
+					//	if (sendClient->gameTcpConnected) {
+					//		// Send control packet to move object on server
+					//		sendPacket << NetworkValues::SPAWN_PLAYER << username
+					//			<< playerBox->shape.getPosition().x << playerBox->shape.getPosition().y
+					//			<< playerBox->velocity.x << playerBox->velocity.y;
+					//			//<< playerBox->isAttacking << playerBox->isBlocking;
 
-						//	if (sendClient->gameTcpConnected) {
-						//		// Send control packet to move object on server
-						//		sendPacket << NetworkValues::SPAWN_PLAYER << username
-						//			<< playerBox->shape.getPosition().x << playerBox->shape.getPosition().y
-						//			<< playerBox->velocity.x << playerBox->velocity.y;
-						//			//<< playerBox->isAttacking << playerBox->isBlocking;
+					//		sendClient->gameTcpSocket.send(sendPacket);
+					//	}
+					//}
+				}
+				break;
+				case NetworkValues::DISCONNECT:
+				{
+					// Notify everyone the player disconnected.
+					NotifyPlayerDisconnected(client->clientName);
 
-						//		sendClient->gameTcpSocket.send(sendPacket);
-						//	}
-						//}
-					}
+					// Disconnect the player.
+					DisconnectPlayer(client, "disconnected");
+
+					// Tag we deleted a client.
+					deletedClient = true;
 					break;
-					case NetworkValues::DISCONNECT: 
-					{
-						// Notify everyone the player disconnected.
-						NotifyPlayerDisconnected(client->clientName);
+				}
+				break;
+				case NetworkValues::CONTROL:
+				{
+					if (playerBox != NULL) {
+						// Get Packet Data here, mose position and key pressed
+						float mousePositionX;
+						float mousePositionY;
+						bool isForwardPressed;
+						bool isAttackPressed;
+						bool isBlockPressed;
 
-						// Disconnect the player.
-						DisconnectPlayer(client, "disconnected");
+						packet >> mousePositionX >> mousePositionY >> isForwardPressed >> isAttackPressed >> isBlockPressed;
 
-						// Tag we deleted a client.
-						deletedClient = true;
-						break;
+						//std::cout << "[SERVER] Got [CONTROL] Signal" 
+						//	<< " MousePos::" << mousePositionX << " " << mousePositionY
+						//	<< " KeyValues::" << isForwardPressed << isAttackPressed << isBlockPressed
+						//	<< std::endl;
+
+						playerBox->isAttacking = isAttackPressed;
+						playerBox->isMovingForward = isForwardPressed;
+						playerBox->isBlocking = isBlockPressed;
+
+
+						// Set looking at position
+						sf::Vector2f aimAt(mousePositionX, mousePositionY);
+						playerBox->SetAimPos(aimAt);
 					}
-					break;
-					case NetworkValues::CONTROL:
-					{
-						if (playerBox != NULL) {
-							// Get Packet Data here, mose position and key pressed
-							float mousePositionX;
-							float mousePositionY;
-							bool isForwardPressed;
-							bool isAttackPressed;
-							bool isBlockPressed;
-
-							packet >> mousePositionX >> mousePositionY >> isForwardPressed >> isAttackPressed >> isBlockPressed;
-
-							//std::cout << "[SERVER] Got [CONTROL] Signal" 
-							//	<< " MousePos::" << mousePositionX << " " << mousePositionY
-							//	<< " KeyValues::" << isForwardPressed << isAttackPressed << isBlockPressed
-							//	<< std::endl;
-
-							playerBox->isAttacking = isAttackPressed;
-							playerBox->isMovingForward = isForwardPressed;
-							playerBox->isBlocking = isBlockPressed;
-
-
-							// Set looking at position
-							sf::Vector2f aimAt(mousePositionX, mousePositionY);
-							playerBox->SetAimPos(aimAt);
-						}
-					}
-					break;
-					default:
+				}
+				break;
+				default:
 					break;
 				}
 			}
-
 			// Do not increment if we deleted a client previously.
-			if (!deletedClient)
+			if (!deletedClient) {
 				clientItr++;
+			}
 		}
 		else
 		{
