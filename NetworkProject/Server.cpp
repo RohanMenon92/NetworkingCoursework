@@ -32,7 +32,6 @@ void Server::ExecutionThread()
 	while (!mWaitingThreadEnd)
 	{
 		HandleIncomingConnections();
-
 		ReceiveInputFromSocket();
 
 		stepTime += stepClock.getElapsedTime();
@@ -123,8 +122,7 @@ void Server::HandleIncomingConnections()
 		std::cout << "[GAME_SERVER] Sent CONNECT packet " << clientRef->gameTcpSocket.getRemoteAddress() << std::endl;
 		clientRef->gameTcpSocket.send(packet);
 		m_clients.push_back(clientRef);
-	}
-	else {
+	} else {
 		delete clientRef;
 	}
 }
@@ -143,7 +141,7 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	for (Player* playerBox : renderGame.playerBoxes) {
 		sf::Packet packet;
 
-		packet << NetworkValues::RENDER_PLAYER << packetId
+		packet << NetworkValues::RENDER_PLAYER //<< packetId
 			<< playerBox->playerID
 			<< playerBox->shape.getPosition().x << playerBox->shape.getPosition().y
 			<< playerBox->velocity.x << playerBox->velocity.y 
@@ -151,17 +149,20 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 			<< playerBox->health
 			<< playerBox->isAttacking << playerBox->isBlocking;
 
+		//client->gameTcpSocket.send(packet);
 		socket.send(packet, client->ip, client->udpPort);
+
 	}
 
 	for (Bullet* bullet : renderGame.bullets) {
 		sf::Packet packet;
 
-		packet << NetworkValues::RENDER_BULLET << packetId
+		packet << NetworkValues::RENDER_BULLET //<< packetId
 			<< bullet->bulletID
 			<< bullet->shape.getPosition().x << bullet->shape.getPosition().y
 			<< bullet->velocity.x << bullet->velocity.y;
 
+		//client->gameTcpSocket.send(packet);
 		socket.send(packet, client->ip, client->udpPort);
 	}
 }

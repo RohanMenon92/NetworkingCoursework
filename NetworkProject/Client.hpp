@@ -16,6 +16,7 @@
 #include <Game.hpp>
 #include <NetworkValues.hpp>
 #include <ServerConfiguration.hpp>
+#include <MultiThreading.hpp>
 
 class Client
 {
@@ -29,7 +30,7 @@ private:
 	bool isConnected;
 
 	bool mWaitingThreadEnd;
-	sf::Thread mThread;
+	//sf::Thread mThread;
 	sf::Clock mClock;
 
 	sf::UdpSocket renderSocket;
@@ -66,13 +67,12 @@ private:
 	void UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, sf::Vector2f aimAt, float health, bool isAttacking, bool isBlocking);
 	void ReceiveTcpPacket();
 	void ClientTick(sf::Time);
-	Player* SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, float health);
-	Bullet* SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity);
+	void SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, float health);
+	void SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity);
 
 public:
-	std::vector<Player*> players;
-	std::vector<Bullet*> bullets;
-
+	std::map<std::string, Player*> players;
+	std::map<std::string, Bullet*> bullets;
 
 	//constructor/destructors
 	Client(std::string newUsername);

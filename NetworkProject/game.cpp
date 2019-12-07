@@ -27,12 +27,10 @@ void Game::initWindow()
 }
 
 //constructors/destructors
-Game::Game(std::vector<Player*>& playerPointer, std::vector<Bullet*>& bulletPointer)
+Game::Game()
 	//: players()
 	//,bullets()
 {
-	players = &playerPointer;
-	bullets = &bulletPointer;
 
 	std::cout << "CONSTUCTOR CALLED" << std::endl;
 }
@@ -80,52 +78,75 @@ void Game::UpdateSFMLEvents()
 	}
 }
 
-void Game::Update(sf::Time dt)
+void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, std::map<std::string, Bullet*>& bulletPointer)
 {
-	// Adding all new player boxes and bullets here
-	// To prevent thread from causing issues in iteration
+	playersPtr = &playerPointer;
+	bulletsPtr = &bulletPointer;
 
-	std::vector<Player*> playersCopy = *players;
-	std::vector<Bullet*> bulletsCopy = *bullets;
+	std::cout << "[GAME ] Update Called " << std::endl;
 
-	for (Player* playerBox : playersCopy) {
-		playerBox->ClientUpdate(dt);
+	//Multithreading::renderMutex.lock();
+
+	for (auto playerPair : (*playersPtr))
+	{
+		Player* player = playerPair.second;
+		Multithreading::renderMutex.lock();
+		player->ClientUpdate(dt);
+		Multithreading::renderMutex.unlock();
 	}
 
-	for (Bullet* bullet : bulletsCopy) {
-		bullet->ClientUpdate(dt);
+	for (auto bulletPair : (*bulletsPtr))
+	{
+		Bullet* bullet = bulletPair.second;
 
+		Multithreading::renderMutex.lock();
+		bullet->ClientUpdate(dt);
 		sf::Vector2f bulletPos = bullet->shape.getPosition();
 		if (bulletPos.x < 0 || bulletPos.x > window->getSize().x
 			|| bulletPos.y < 0 || bulletPos.y > window->getSize().y)
 		{
 			DespawnBullet(bullet->bulletID);
 		}
+		Multithreading::renderMutex.unlock();
+
 	}
+	//Multithreading::renderMutex.unlock();
+	std::cout << "[GAME ] Update DONE " << std::endl;
 }
 
-void Game::Render()
+void Game::Render(std::map<std::string, Player*>& playerPointer, std::map<std::string, Bullet*>& bulletPointer)
 {
-	//std::cout << "[CLIENT GAME] RENDER " << std::endl;
-
-	std::vector<Player*> playersCopy = *players;
-	std::vector<Bullet*> bulletsCopy = *bullets;
+	playersPtr = &playerPointer;
+	bulletsPtr = &bulletPointer;
 
 	window->clear();
+	Multithreading::renderMutex.lock();
 
+	std::cout << "[GAME ] Render Called " << std::endl;
+
+	//std::cout << "[CLIENT GAME] RENDER " << std::endl;
 
 	// Render Player Boxes
-	for (Player* playerBox : playersCopy) {
-		window->draw(playerBox->shape);
-		window->draw(playerBox->aimShape);
+	for (auto playerPair : (*playersPtr))
+	{
+		std::cout << "[GAME ] TRYING TO RENDER " << std::endl;
+		//Player* player = playerPair.second;
+		//window->draw(player->shape);
+		//window->draw(player->aimShape);
+		std::cout << "[GAME ] RENDER DONE " << std::endl;
 	}
 
-	// Render Player Bullets
-	for (Bullet* bullet : bulletsCopy) {
+	////// Render Player Bullets
+	for (auto bulletPair : (*bulletsPtr))
+	{
+		Bullet* bullet = bulletPair.second;
 		window->draw(bullet->shape);
 	}
 
+	std::cout << "[GAME ] Render Done " << std::endl;
+	Multithreading::renderMutex.unlock();
 	window->display();
+
 }
 
 void Game::DespawnPlayer(std::string playerID)
@@ -140,14 +161,14 @@ void Game::DespawnBullet(std::string bulletID)
 
 void Game::RunGame(sf::Vector2f spawnPlayerPosition)
 {
-	std::cout << "GAME CLIENT IS RUNNING GAME: window Open " << window->isOpen() << " POSITION "
-		<< spawnPlayerPosition.x << " "  << spawnPlayerPosition.y << std::endl;
+	//std::cout << "GAME CLIENT IS RUNNING GAME: window Open " << window->isOpen() << " POSITION "
+	//	<< spawnPlayerPosition.x << " "  << spawnPlayerPosition.y << std::endl;
 
-	while (window->isOpen())
-	{
-		UpdateSFMLEvents();
-		ProcessInput();
-		Update(dtClock.restart());
-		Render();
-	}
+	//while (window->isOpen())
+	//{
+	//	UpdateSFMLEvents();
+	//	ProcessInput();
+	//	Update(dtClock.restart());
+	//	Render();
+	//}
 }

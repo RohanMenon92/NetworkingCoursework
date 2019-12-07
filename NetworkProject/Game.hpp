@@ -21,24 +21,24 @@ class Game
 {
 private:
 	//variables
-	sf::RenderWindow *window;
 	sf::Event sfEvent;
 
 	sf::Clock dtClock;
 	//Initialization
 
-	std::vector<Player*>* players;
-	std::vector<Bullet*>* bullets;
-
+	std::map<std::string, Player*>* playersPtr;
+	std::map<std::string, Bullet*>* bulletsPtr;
 
 public:
+	sf::RenderWindow *window;
+
 	sf::Vector2f mousePos;
 	bool isAttackPressed = false;
 	bool isBlockPressed = false;
 	bool isForwardPressed = false;
 
 	//constructor/destructor
-	Game(std::vector<Player*>& playerPointer, std::vector<Bullet*>& bulletPointer);
+	Game();
 	//virtual ~Game();
 
 	void initWindow();
@@ -48,8 +48,8 @@ public:
 	//Functions
 	void ProcessInput();
 	void UpdateSFMLEvents();
-	void Update(sf::Time dt);
-	void Render();
+	void Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, std::map<std::string, Bullet*>& bulletPointer);
+	void Render(std::map<std::string, Player*>& playerPointer, std::map<std::string, Bullet*>& bulletPointer);
 	void DespawnPlayer(std::string playerID);
 	void DespawnBullet(std::string bulletID);
 

@@ -1,23 +1,27 @@
 #include "Client.hpp"
 
 Client::Client(std::string newUsername)
-	: mThread(&Client::ExecutionThread, this)
-	, isConnected(false)
+	: isConnected(false)
 	, mWaitingThreadEnd(false)
 	, controlSocket()
 	, renderSocket()
 	, udpPacketNumberReceive(0)
 	, lossPacket(0)
 	, timeOutTimer(sf::Time::Zero)
+	, players()
+	, bullets()
 	, username(newUsername)
 {
+	game.reset(new Game());
 	renderSocket.bind(ServerConfiguration::GameClientUDPPort);
 
 	// Initially blocking
 	controlSocket.setBlocking(true);
 	renderSocket.setBlocking(false);
 
-	mThread.launch();
+	ConnectToServer();
+	ExecutionThread();
+	//mThread.launch();
 }
 
 Client::~Client()
@@ -29,25 +33,22 @@ Client::~Client()
 	controlSocket.send(packet);
 
 	mWaitingThreadEnd = true;
-	mThread.wait();
+	//mThread.wait();
 }
 
 void Client::Init()
 {
-	ConnectToServer();
 }
 
 void Client::InitGame(sf::Vector2f startPos)
 {
 	// Bind UDP Socket
-
-	// Create game elements and start receving control
-	game.reset(new Game(players, bullets));
-	game->initWindow();
-	game->RunGame(startPos);
-
 	isConnected = true;
 	controlSocket.setBlocking(false);
+
+	// Create game elements and start receving control
+	game->initWindow();
+	//game->RunGame(startPos);
 }
 
 void Client::ConnectToServer()
@@ -93,14 +94,24 @@ void Client::ExecutionThread()
 {
 	sf::Time stepInterval = sf::seconds(1.f / 60.f);
 	sf::Time stepTime = sf::Time::Zero;
-	sf::Time tickInterval = sf::seconds(1.f / 40.f);
+	sf::Time tickInterval = sf::seconds(1.f / 60.f);
 	sf::Time tickTime = sf::Time::Zero;
 	sf::Clock stepClock, tickClock;
 
 	while (!mWaitingThreadEnd)
 	{
+		if (game->window->isOpen())
+		{
+			game->UpdateSFMLEvents();
+			game->ProcessInput();
+			if (isConnected) {
+				game->Update(dtClock.restart(), players, bullets);
+				game->Render(players, bullets);
+			}
+		}
+
+		ReceiveInput();
 		if (isConnected) {
-			ReceiveInput();
 			ReceiveUdpPacket();
 			ReceiveTcpPacket();
 		}
@@ -133,7 +144,7 @@ void Client::ExecutionThread()
 void Client::ReceiveInput()
 {
 	if (isConnected) {
-		std::cout << "[GAME_CLIENT] Receiving Input " << std::endl;
+		//std::cout << "[GAME_CLIENT] Receiving Input " << std::endl;
 		// Recieve Input from Game
 		mousePos = game->mousePos;
 		isAttackPressed = game->isAttackPressed;
@@ -212,30 +223,29 @@ void Client::ReceiveUdpPacket()
 	sf::IpAddress ip = ServerConfiguration::HostIPAddress;
 	unsigned short int remotePort(ServerConfiguration::GameUDPPort);
 
-	while (renderSocket.receive(packet, ip, remotePort) == sf::Socket::Status::Done)
+	if (renderSocket.receive(packet, ip, remotePort) == sf::Socket::Status::Done)
 	{
-		std::cout << "[Client RECIEVE UDP SOCKET] IP:" << ip << "  remotePort:" << remotePort << std::endl;
 		timeOutTimer = sf::Time::Zero;
 		unsigned int netCode(0);
 		packet >> netCode;
 
 		unsigned long long number;
 		packet >> number;
+		//std::cout << "[Client RECIEVE UDP SOCKET] Number received : " << number << " Number Already received:" << udpPacketNumberReceive << std::endl;
 
-		switch (netCode)
-		{
-		case NetworkValues::RENDER_BULLET:
-			std::cout << "[Client RECIEVE UDP SOCKET] RENDER BULLET FROM UDP " << std::endl;
+		if (number > udpPacketNumberReceive) {
+			switch (netCode)
+			{
+			case NetworkValues::RENDER_BULLET:
+			{
+				//std::cout << "[Client RECIEVE UDP SOCKET] RENDER BULLET FROM UDP " << std::endl;
 
-			if (number - udpPacketNumberReceive > 1)
-			{
-				lossPacket += (number - 1) - udpPacketNumberReceive;
-				std::cout << "[PACKET_LOSS] " << lossPacket << " / " << udpPacketNumberReceive
-					<< " (" << (lossPacket * 100.f) / (float)(udpPacketNumberReceive) << "%)" << std::endl;
-			}
-			if (number > udpPacketNumberReceive)
-			{
-				udpPacketNumberReceive = number;
+				//if (number - udpPacketNumberReceive > 1)
+				//{
+				//	lossPacket += (number - 1) - udpPacketNumberReceive;
+				//	std::cout << "[PACKET_LOSS] " << lossPacket << " / " << udpPacketNumberReceive
+				//		<< " (" << (lossPacket * 100.f) / (float)(udpPacketNumberReceive) << "%)" << std::endl;
+				//}
 
 				std::string bulletID;
 				float posX;
@@ -244,23 +254,23 @@ void Client::ReceiveUdpPacket()
 				float velocityY;
 				packet >> bulletID >> posX >> posY >> velocityX >> velocityY;
 
-				std::cout << " [CLIENT GAME UPDATE BULLET ] ";
+				//std::cout << " [CLIENT GAME UPDATE BULLET ] " << bulletID << std::endl;
 				sf::Vector2f pos(posX, posY);
 				sf::Vector2f velocity(velocityX, velocityY);
 				UpdateBullet(bulletID, pos, velocity);
 			}
 			break;
-		case NetworkValues::RENDER_PLAYER:
-			std::cout << "[Client RECIEVE UDP SOCKET] RENDER PLAYER FROM UDP " << std::endl;
+			case NetworkValues::RENDER_PLAYER: 
+			{
 
-			if (number - udpPacketNumberReceive > 1)
-			{
-				lossPacket += (number - 1) - udpPacketNumberReceive;
-				std::cout << "[PACKET_LOSS] " << lossPacket << " / " << udpPacketNumberReceive
-					<< " (" << (lossPacket * 100.f) / (float)(udpPacketNumberReceive) << "%)" << std::endl;
-			}
-			if (number > udpPacketNumberReceive)
-			{
+				//std::cout << "[Client RECIEVE UDP SOCKET] RENDER PLAYER FROM UDP " << std::endl;
+
+				//if (number - udpPacketNumberReceive > 1)
+				//{
+				//	lossPacket += (number - 1) - udpPacketNumberReceive;
+				//	std::cout << "[PACKET_LOSS] " << lossPacket << " / " << udpPacketNumberReceive
+				//		<< " (" << (lossPacket * 100.f) / (float)(udpPacketNumberReceive) << "%)" << std::endl;
+				//}
 				std::string username;
 				float posX;
 				float posY;
@@ -271,8 +281,11 @@ void Client::ReceiveUdpPacket()
 				float health;
 				bool isAttacking;
 				bool isBlocking;
+
 				packet >> username >>
-					posX >> posY >> velocityX >> velocityY >> aimX >> aimY >>
+					posX >> posY >>
+					velocityX >> velocityY >>
+					aimX >> aimY >>
 					health >> isAttacking >> isBlocking;
 
 				sf::Vector2f pos(posX, posY);
@@ -281,52 +294,47 @@ void Client::ReceiveUdpPacket()
 
 				UpdatePlayer(username, pos, velocity, aim, health, isAttacking, isBlocking);
 			}
+
 			break;
+			}
+			udpPacketNumberReceive = number;
 		}
 	}
 }
 
 void Client::UpdateBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity)
 {
-	bool bulletFound = false;
-	for (Bullet* bullet : bullets) {
-		if (bulletID == bullet->bulletID) {
-			bulletFound = true;
-			bullet->shape.setPosition(pos);
-			bullet->velocity = velocity;
-		}
-	}
+	std::cout << "[CLIENT UPDATE BULLET] ABOUT TO ITERATE " << std::endl;
 
-	if (!bulletFound) {
+	if (bullets.count(bulletID) == 0) {
 		SpawnBullet(bulletID, pos, velocity);
+	} else {
+		Bullet* bullet = bullets.find(bulletID)->second;
+		bullet->shape.setPosition(pos);
+		bullet->velocity = velocity;
 	}
 }
 
 void Client::UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, sf::Vector2f aimAt, float health, bool isAttacking, bool isBlocking)
 {
-	bool playerBoxFound = false;
-	for (Player* playerBox : players) {
-		if (playerID == playerBox->playerID) {
-			playerBoxFound = true;
-			playerBox->shape.setPosition(pos);
-			playerBox->velocity = velocity;
-			playerBox->isAttacking = isAttacking;
-			playerBox->isBlocking = isBlocking;
-			playerBox->aimAt = aimAt;
-			playerBox->health = health;
-		}
-	}
+	std::cout << "[CLIENT UPDATE PLAYER] ABOUT TO ITERATE " << std::endl;
 
-	if (!playerBoxFound) {
+	if (players.count(playerID) == 0) {
 		SpawnPlayer(playerID, pos, velocity, health);
+	}
+	else {
+		Player* player = players.find(playerID)->second;
+		player->shape.setPosition(pos);
+		player->velocity = velocity;
+		player->isAttacking = isAttacking;
+		player->isBlocking = isBlocking;
+		player->aimAt = aimAt;
+		player->health = health;
 	}
 }
 
-Player* Client::SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, float health)
+void Client::SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, float health)
 {
-	Multithreading::renderMutex.lock();
-	std::cout << "Player has been created " << playerID << std::endl;
-
 	std::unique_ptr<Player> player(new Player());
 
 	player->playerID = playerID;
@@ -334,15 +342,14 @@ Player* Client::SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f
 	player->velocity = velocity;
 	player->health = health;
 
-	players.push_back(player.get());
-	Multithreading::renderMutex.unlock();
-	return players.back();
+	std::cout << "[SPAWN___PLAYER] Player is being added " << playerID << std::endl;
+	players.insert(std::make_pair(playerID, player.get()));
+	std::cout << "[SPAWN___PLAYER] Player has been added " << playerID << std::endl;
 	//pendingPlayerBoxes.insert(std::pair<std::string, PlayerBox*>(playerID, playerBox));
 }
 
-Bullet* Client::SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity)
+void Client::SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity)
 {
-	Multithreading::renderMutex.lock();
 	std::cout << "Bullet has been created " << bulletID << std::endl;
 
 	std::unique_ptr<Bullet> bullet(new Bullet());
@@ -350,15 +357,14 @@ Bullet* Client::SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f
 	bullet->bulletID = bulletID;
 	bullet->shape.setPosition(pos);
 	bullet->velocity = velocity;
-	bullets.push_back(bullet.get());
-	Multithreading::renderMutex.unlock();
-	return bullets.back();
+	bullets.insert(std::make_pair(bulletID, bullet.get()));
 	//pendingBullets.insert(std::pair<std::string, Bullet*>(bulletID, bullet));
 }
 
 
 void Client::ClientTick(sf::Time)
 {
+	//std::cout << "IN Client Tick" << std::endl;
 	if (!isConnected) {
 		return;
 	}
