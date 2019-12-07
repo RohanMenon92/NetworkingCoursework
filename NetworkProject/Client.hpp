@@ -53,7 +53,7 @@ private:
 	sf::Vector2f mousePos;
 
 	// ip of the seveur
-	sf::IpAddress serverIP = "127.0.0.1";
+	sf::IpAddress serverIP = ServerConfiguration::HostIPAddress;
 
 	//initialization
 	void InitGame(sf::Vector2f startPos);

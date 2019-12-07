@@ -7,6 +7,10 @@ Bullet::Bullet(float radius)
 	this->shape.setFillColor(sf::Color::Red);
 }
 
+Bullet::~Bullet()
+{
+}
+
 void Bullet::Update(sf::Time dt)
 {
 	shape.move(velocity * dt.asSeconds());

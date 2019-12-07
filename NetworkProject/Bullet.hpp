@@ -16,6 +16,7 @@ public:
 	float maxSpeed;
 
 	Bullet(float radius = 5.f);
+	virtual ~Bullet();
 
 	void Update(sf::Time dt);
 	void ClientUpdate(sf::Time dt);

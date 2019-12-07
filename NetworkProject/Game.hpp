@@ -38,7 +38,7 @@ public:
 
 	//constructor/destructor
 	Game();
-	//virtual ~Game();
+	virtual ~Game();
 
 	void initWindow();
 

@@ -67,20 +67,17 @@ void Server::ServerTick(sf::Time dt) {
 
 void Server::Init()
 {
-	// Init the login server.
-	//m_loginServer.init();
-
 	// Bind to the game ports.
 	sf::Socket::Status listenStatus = m_gameTcpListener.listen(ServerConfiguration::GameTCPPort);
-	m_gameTcpListener.setBlocking(false);
 
 	if (listenStatus != sf::Socket::Done) {
 		std::cout << "[GAME_SERVER] [ERROR] Lisener did not get done:" << listenStatus << std::endl;
 		return;
 	}
+	m_gameTcpListener.setBlocking(false);
 
 	// Bind to the Udp ports.
-	m_gameUdpSocket.bind(ServerConfiguration::GameUDPPort);
+	m_gameUdpSocket.bind(ServerConfiguration::ServerUDPPort);
 	m_gameUdpSocket.setBlocking(false);
 
 	//Multithreading::outputMutex.lock();
@@ -151,19 +148,22 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 
 		//client->gameTcpSocket.send(packet);
 		socket.send(packet, client->ip, client->udpPort);
-
+		packet.clear();
 	}
 
 	for (Bullet* bullet : renderGame.bullets) {
 		sf::Packet packet;
+		
+		std::cout << "Sending out bullet " << bullet->bulletID << std::endl;
 
-		packet << NetworkValues::RENDER_BULLET //<< packetId
+		packet << NetworkValues::RENDER_BULLET << packetId
 			<< bullet->bulletID
 			<< bullet->shape.getPosition().x << bullet->shape.getPosition().y
 			<< bullet->velocity.x << bullet->velocity.y;
 
 		//client->gameTcpSocket.send(packet);
 		socket.send(packet, client->ip, client->udpPort);
+		packet.clear();
 	}
 }
 

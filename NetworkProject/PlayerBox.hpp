@@ -36,7 +36,9 @@ public:
 	void Update(sf::Time dt);
 	void ClientUpdate(sf::Time dt);
 	void SetAimPos(sf::Vector2f aimAt);
+
 	Player();
+	virtual ~Player();
 
 	sf::CircleShape GetShape();
 	sf::CircleShape GetAimShape();

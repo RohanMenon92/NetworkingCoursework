@@ -19,6 +19,10 @@ Player::Player() :
 	aimShape.setOrigin(5.f, 5.f);
 }
 
+Player::~Player()
+{
+}
+
 sf::CircleShape Player::GetShape()
 {
 	return shape;

@@ -35,6 +35,10 @@ Game::Game()
 	std::cout << "CONSTUCTOR CALLED" << std::endl;
 }
 
+Game::~Game()
+{
+}
+
 void Game::ProcessInput()
 {	
 	// Mouse Positions
@@ -83,7 +87,7 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 	playersPtr = &playerPointer;
 	bulletsPtr = &bulletPointer;
 
-	std::cout << "[GAME ] Update Called " << std::endl;
+	//std::cout << "[GAME ] Update Called " << std::endl;
 
 	//Multithreading::renderMutex.lock();
 
@@ -106,7 +110,7 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 		}
 	}
 	//Multithreading::renderMutex.unlock();
-	std::cout << "[GAME ] Update DONE " << std::endl;
+	//std::cout << "[GAME ] Update DONE " << std::endl;
 }
 
 void Game::Render(std::map<std::string, Player*>& playerPointer, std::map<std::string, Bullet*>& bulletPointer)
@@ -116,7 +120,7 @@ void Game::Render(std::map<std::string, Player*>& playerPointer, std::map<std::s
 
 	window->clear();
 
-	std::cout << "[GAME ] Render Called " << std::endl;
+	//std::cout << "[GAME ] Render Called " << std::endl;
 
 	// Render Player Boxes
 	for (auto playerPair : (*playersPtr))
@@ -133,7 +137,7 @@ void Game::Render(std::map<std::string, Player*>& playerPointer, std::map<std::s
 		window->draw(bullet->GetShape());
 	}
 
-	std::cout << "[GAME ] Render Done " << std::endl;
+	//std::cout << "[GAME ] Render Done " << std::endl;
 	window->display();
 
 }

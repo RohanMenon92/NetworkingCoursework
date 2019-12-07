@@ -46,12 +46,12 @@ namespace ServerConfiguration
 	const sf::Time GameServerTimeout = sf::seconds(5.f);
 
 	const unsigned int InformationPort(22626);
-	const unsigned int GameTCPPort(22624);
-	const unsigned int ClientTCPPort(22625);
-	const unsigned int GameUDPPort(22623);
-	const unsigned int GameClientUDPPort(22624);
+	const unsigned int GameTCPPort(21101); // Connects TCP from server port
+	const unsigned int ClientTCPPort(21102); // Connects TCP from client port
+	const unsigned int ServerUDPPort(21103); // Connects UDP from server
+	const unsigned int GameClientUDPPort(21104); // Connevts UDP from client
 	const float PlayerReloadSpeed = 5.f;
-	const std::string HostIPAddress = "127.0.0.1";
+	const std::string HostIPAddress = "192.68.0.20";
 } // namespace ServerConfiguration.
 
 #endif // SERVERCONFIGURATION_HPP_INCLUDED
