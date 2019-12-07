@@ -10,16 +10,14 @@
 class Bullet
 {
 public:
-	int bulletID;
+	std::string bulletID;
 	sf::CircleShape shape;
-	sf::Vector2f currVelocity;
+	sf::Vector2f velocity;
 	float maxSpeed;
 
-	Bullet(float radius = 5.f)
-		: currVelocity(0.f, 0.f), maxSpeed(15.f)
-	{
-		this->shape.setRadius(radius);
-		this->shape.setFillColor(sf::Color::Red);
-	}
+	Bullet(float radius = 5.f);
+
+	void Update(sf::Time dt);
+	void ClientUpdate(sf::Time dt);
 };
 #endif

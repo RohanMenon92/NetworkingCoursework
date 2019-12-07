@@ -7,6 +7,7 @@
 namespace Multithreading
 {
 	static std::mutex outputMutex;
+	static std::mutex renderMutex;
 }
 
 #endif // MULTITHREADING_HPP_INCLUDED

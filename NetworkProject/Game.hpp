@@ -7,10 +7,12 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 #include <SFML/Window/Mouse.hpp>
+#include <SFML/Window/Keyboard.hpp>
 
 #include <ResourceIdentifier.hpp>
 #include <PlayerBox.hpp>
 #include <Bullet.hpp>
+#include <Multithreading.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -23,18 +25,23 @@ private:
 	sf::Event sfEvent;
 
 	sf::Clock dtClock;
-	
-	sf::Vector2f mousePos;
-	std::vector<PlayerBox> playerBoxes;
-	std::vector<Bullet> bullets;
-
 	//Initialization
-	void initWindow();
-	
+
+	std::vector<Player*>* players;
+	std::vector<Bullet*>* bullets;
+
+
 public:
+	sf::Vector2f mousePos;
+	bool isAttackPressed = false;
+	bool isBlockPressed = false;
+	bool isForwardPressed = false;
+
 	//constructor/destructor
-	Game();
-	virtual ~Game();
+	Game(std::vector<Player*>& playerPointer, std::vector<Bullet*>& bulletPointer);
+	//virtual ~Game();
+
+	void initWindow();
 
 	void RunGame(sf::Vector2f spawnPlayerPosition);
 
@@ -43,6 +50,11 @@ public:
 	void UpdateSFMLEvents();
 	void Update(sf::Time dt);
 	void Render();
+	void DespawnPlayer(std::string playerID);
+	void DespawnBullet(std::string bulletID);
+
+	//void UpdateBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity);
+	//void UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, sf::Vector2f aimAt, float health, bool isAttacking, bool isBlocking);
 };
 
 #endif

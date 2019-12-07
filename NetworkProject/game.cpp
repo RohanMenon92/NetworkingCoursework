@@ -4,7 +4,6 @@
 //initialize functions
 void Game::initWindow()
 {
-	std::cout << "INIT WINDOW HAS BEEN CALLED" << std::endl;
 	//creates an SFML window using options from window.ini file.
 	std::ifstream ifs("Config/window.ini");
 	sf::VideoMode window_bounds(800, 600);
@@ -23,29 +22,53 @@ void Game::initWindow()
 	window = new sf::RenderWindow(window_bounds, title);
 	window->setFramerateLimit(framerate_limit);
 	window->setVerticalSyncEnabled(vertical_sync_enabled);
+
+	std::cout << "initWindow Called" << std::endl;
 }
 
 //constructors/destructors
-Game::Game() :
-	playerBoxes()
-	,bullets()
+Game::Game(std::vector<Player*>& playerPointer, std::vector<Bullet*>& bulletPointer)
+	//: players()
+	//,bullets()
 {
-	initWindow();
-}
+	players = &playerPointer;
+	bullets = &bulletPointer;
 
-Game::~Game()
-{
-	delete window;
-
-	//while (!this->states.empty()) {
-	//	delete this->states.top();
-	//	this->states.pop();
-	//}
+	std::cout << "CONSTUCTOR CALLED" << std::endl;
 }
 
 void Game::ProcessInput()
-{
-	std::cout << "[GAME] PROCESS INPUT" << std::endl;
+{	
+	// Mouse Positions
+	mousePos = (sf::Vector2f)sf::Mouse::getPosition(*(window));
+
+	sf::Vector2u windowSize = window->getSize();
+
+	//Limit mouse movement within X bounds
+	if (mousePos.x + 5.f > windowSize.x) {
+		mousePos.x = windowSize.x - 5.f;
+	}
+	else if (mousePos.x - 5.f < 0) {
+		mousePos.x = 5.f;
+	}
+	else {
+		mousePos.x = mousePos.x;
+	}
+
+	//Limit mouse movement within Y bounds
+	if (mousePos.y + 5.f > windowSize.y) {
+		mousePos.y = windowSize.y - 5.f;
+	}
+	else if (mousePos.y - 5.f / 2 < 0) {
+		mousePos.y = 5.f;
+	}
+	else {
+		mousePos.y = mousePos.y;
+	}
+
+	isForwardPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
+	isAttackPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
+	isBlockPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
 }
 
 void Game::UpdateSFMLEvents()
@@ -59,122 +82,72 @@ void Game::UpdateSFMLEvents()
 
 void Game::Update(sf::Time dt)
 {
-	std::cout << "[GAME] UPDATE CALL DT:" << dt.asSeconds() << std::endl;
+	// Adding all new player boxes and bullets here
+	// To prevent thread from causing issues in iteration
+
+	std::vector<Player*> playersCopy = *players;
+	std::vector<Bullet*> bulletsCopy = *bullets;
+
+	for (Player* playerBox : playersCopy) {
+		playerBox->ClientUpdate(dt);
+	}
+
+	for (Bullet* bullet : bulletsCopy) {
+		bullet->ClientUpdate(dt);
+
+		sf::Vector2f bulletPos = bullet->shape.getPosition();
+		if (bulletPos.x < 0 || bulletPos.x > window->getSize().x
+			|| bulletPos.y < 0 || bulletPos.y > window->getSize().y)
+		{
+			DespawnBullet(bullet->bulletID);
+		}
+	}
 }
 
 void Game::Render()
 {
-	std::cout << "[GAME] RENDER CALL" << std::endl;
+	//std::cout << "[CLIENT GAME] RENDER " << std::endl;
+
+	std::vector<Player*> playersCopy = *players;
+	std::vector<Bullet*> bulletsCopy = *bullets;
+
+	window->clear();
+
+
+	// Render Player Boxes
+	for (Player* playerBox : playersCopy) {
+		window->draw(playerBox->shape);
+		window->draw(playerBox->aimShape);
+	}
+
+	// Render Player Bullets
+	for (Bullet* bullet : bulletsCopy) {
+		window->draw(bullet->shape);
+	}
+
+	window->display();
 }
 
-////Functions
-//void Game::updateDT()
-//{
-//	//updates the dt variable with the time it takes to update and render one frame
-//	this->dt = this->dtClock.restart().asSeconds();
-//	//system("cls");
-//	//std::cout << this->dt << std::endl;
-//}
-//
-////Captures event for closing window
-//void Game::updateSFMLEvents()
-//{
-//	while (this->window->pollEvent(sfEvent))
-//	{
-//		if (this->sfEvent.type == sf::Event::Closed)
-//			this->window->close();
-//	}
-//}
-//
-//void Game::update()
-//{
-//	this->updateSFMLEvents();
-//	mousePos = (sf::Vector2f)sf::Mouse::getPosition(*(this->window));
-//	//listOfCircles[0].setPosition(mousePos.x-listOfCircles[0].getRadius(), mousePos.y - listOfCircles[0].getRadius());
-//	myPaddle.setPosition(mousePos.x, mousePos.y);
-//	//std::cout << "position set to: x" << mousePos.x << " y" << mousePos.y << std::endl;
-//
-//	//if (!this->states.empty()) {
-//	//	this->states.top()->update(this->dt);
-//
-//	//	/*if (this->states.top()->getQuit()) {
-//	//		delete this->states.top();
-//	//		this->states.pop();
-//	//	}*/
-//	//}
-//}
+void Game::DespawnPlayer(std::string playerID)
+{
+	//playerBoxes.erase(playerID);
+}
 
-//void Game::render()
-//{
-//	this->window->clear();
-//
-//	//render items
-//	//if (!this->states.empty()) {
-//	//	this->states.top()->render();
-//	//}
-//
-//	this->window->draw(enemyPaddle);
-//	this->window->draw(listOfCircles[0]);
-//	this->window->draw(myPaddle);
-//
-//	this->window->display();
-//}
+void Game::DespawnBullet(std::string bulletID)
+{
+	//bullets.erase(bulletID);
+}
 
 void Game::RunGame(sf::Vector2f spawnPlayerPosition)
 {
-	std::cout << "GAME CLIENT IS RUNNING GAME: window" << window->isOpen() << " POSITION "
+	std::cout << "GAME CLIENT IS RUNNING GAME: window Open " << window->isOpen() << " POSITION "
 		<< spawnPlayerPosition.x << " "  << spawnPlayerPosition.y << std::endl;
 
 	while (window->isOpen())
 	{
-		ProcessInput();
 		UpdateSFMLEvents();
+		ProcessInput();
 		Update(dtClock.restart());
 		Render();
 	}
 }
-
-//void Game::run()
-//{
-//	//setup ball
-//	sf::CircleShape ball(100.f);
-//	ball.setFillColor(sf::Color::Green);
-//	listOfCircles.push_back(ball);
-//	//defined by the 32x32 sprite which is scaled up 10x
-//	sf::IntRect cropShape(30, 90, 260, 140);
-//	//			  x start, y start, x length, y length
-//	sf::Color translucent = sf::Color(255, 255, 255, 180);
-//	//sf::Color translucent = sf::Color(255, 0, 0, 180);
-//	//setup player paddle
-//	if (!bluPaddle.loadFromFile("Resources/bluPaddle.png")) {
-//		std::cout << "failed to load sprite" << std::endl;
-//	}
-//	myPaddle.setTexture(bluPaddle);
-//	myPaddle.setTextureRect(cropShape);
-//	//change the origin of the paddle to be (0,0)
-//	sf::Vector2i bluSpriteSize(cropShape.width, cropShape.height);
-//	myPaddle.setOrigin((bluSpriteSize.x / 2), (bluSpriteSize.y / 2));
-//	myPaddle.setColor(translucent);
-//
-//	//setup enemy paddle
-//	if (!redPaddle.loadFromFile("Resources/redPaddle.png")) {
-//		std::cout << "failed to load sprite" << std::endl;
-//	}
-//	enemyPaddle.setTexture(redPaddle);
-//	enemyPaddle.setTextureRect(cropShape);
-//	//change the origin of the paddle to be (0,0)
-//	sf::Vector2i redSpriteSize(cropShape.width, cropShape.height);
-//	enemyPaddle.setOrigin(redSpriteSize.x / 2, redSpriteSize.y / 2);
-//	//set paddle position to the centre of the window
-//	sf::Vector2f windowSize = (sf::Vector2f)this->window->getSize();
-//	enemyPaddle.setPosition(windowSize.x / 2, windowSize.y / 2);
-//	enemyPaddle.setColor(translucent);
-//
-//	//main loop
-//	while (this->window->isOpen())
-//	{
-//		this->updateDT();
-//		this->update();
-//		this->render();
-//	}
-//}

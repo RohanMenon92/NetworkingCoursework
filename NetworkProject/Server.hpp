@@ -55,7 +55,7 @@ public:
 
 	// Sends update to a particular client
 	void SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket);
-
+	
 	// Returns the number of players currently online.
 	unsigned int GetNumberOfPlayers() const;
 
@@ -82,7 +82,10 @@ protected:
 	void UpdateTimeoutPlayers(sf::Time dt);
 
 	// Receives the input from the clients TCP sockets.
-	void ReceiveInputThroughTCP();
+	void ReceiveThroughTCP();
+
+	// Receives the input from the clients TCP sockets.
+	void ReceiveThroughUDP();
 
 	// Notifies everyone the player connected.
 	void NotifyPlayerConnected(std::string username);
@@ -115,7 +118,5 @@ protected:
 	// The game UDP socket.
 	sf::UdpSocket m_gameUdpSocket;
 
-	// Pending TCP connections.
-	//std::vector<PendingSocket*> m_pendingTcpSockets;
 };
 #endif

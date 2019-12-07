@@ -23,16 +23,16 @@ int main(int argc, void** argv[])
 		if (netState == "s" || netState == "S") {
 			Server server;
 			server.Init();
-			defined = true;
+			//defined = true;
 		}
 		else if (netState == "c" || netState == "C") {
 			std::string username;
 			std::cout << "What's your username?\n";
 			std::cin >> username;
 
-			Client* client = new Client(username);
-			client->Init();
-			defined = true;
+			Client client(username);
+			client.Init();
+			//defined = true;
 		}
 		std::cout << "Invalid input, try again. \n";
 	} while (!defined);

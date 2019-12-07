@@ -25,14 +25,18 @@ public:
 	sf::Clock dtClock;
 	float dt;
 
-	std::vector<PlayerBox> playerBoxes;
-	std::vector<Bullet> bullets;
+	const float playerAimSpeed = 25.f;
+	const float playerRotateSpeed = 10.f;
+	const float bulletSpeed = 10.f;
+
+	std::vector<Player*> playerBoxes;
+	std::vector<Bullet*> bullets;
 
 public:
 	RenderGame();
 	void run();
 	sf::Vector2f OnSocketConnect(ClientRef* clientRef);
-	void OnPlayerConnect(std::string username, PlayerBox* playerBox);
+	void OnPlayerConnect(std::string username, Player playerBox);
 	void OnPlayerAimMove(std::string username, sf::Vector2f position);
 	void OnPlayerDisconnect(std::string username);
 
@@ -42,8 +46,12 @@ protected:
 private:
 	void ProcessPlayerInput();
 	void UpdateSFMLEvents();
+	float GetRotationAim(sf::Vector2f currPos, sf::Vector2f aimPos);
 	void Update(sf::Time dt);
 	void Render();
+	sf::Vector2f Interpolate2f(const sf::Vector2f& pointA, const sf::Vector2f& pointB, float factor);
+
+	float InterpolateFloat(const float & pointA, const float & pointB, float factor);
 
 private:
 	static const sf::Time	TimePerFrame;

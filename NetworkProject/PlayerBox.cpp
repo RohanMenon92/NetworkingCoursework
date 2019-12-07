@@ -1,53 +1,81 @@
 #include "PlayerBox.hpp"
 
-//void PlayerBox::AimAtPosition(sf::Vector2f aimPos) {
-//	sf::Vector2f curPos = ;
-//	sf::Vector2i position = sf::Mouse::getPosition(win);
-//
-//	// now we have both the sprite position and the cursor
-//	// position lets do the calculation so our sprite will
-//	// face the position of the mouse
-//	const float PI = 3.14159265;
-//
-//	float dx = curPos.x - position.x;
-//	float dy = curPos.y - position.y;
-//
-//	float rotation = (atan2(dy, dx)) * 180 / PI;
-//
-//	this.setRotation(rotation + 180);
-//}
-
-void PlayerBox::OnAttackPressed()
+Player::Player() :
+	isAttacking(false)
+	, isBlocking(false)
+	, isMovingForward(false)
+	, targetRotation(0)
+	, aimAt(100.f, 100.f)
+	, bulletsFired(0)
+	, aimShape(5.f)
+	, moveForwardSpeed(40.f)
 {
-	isAttacking = true;
+	shape.setRadius(25.f);
+	shape.setFillColor(sf::Color::White);
+	shape.setOrigin(25.f, 25.f);
+
+	aimShape.setFillColor(sf::Color::Green);
+	//	player.setPointCount(3);
+	aimShape.setOrigin(5.f, 5.f);
 }
 
-void PlayerBox::OnAttackUnpressed()
+void Player::Update(sf::Time dt)
 {
-	isAttacking = false;
+	if (canAttackTimer > 0.f) {
+		canAttackTimer -= dt.asSeconds();
+	}
+	else {
+		canAttackTimer = 0.f;
+	}
+
+	sf::Vector2f aimDir = aimAt - shape.getPosition();
+	heading = aimDir / sqrt(pow(aimDir.x, 2) + pow(aimDir.y, 2));
+
+	sf::Vector2f playerPos = shape.getPosition();
+	float rotation = shape.getRotation();
+
+	if (isBlocking) {
+		shape.setFillColor(sf::Color::Blue);
+		velocity.x = 0.f;
+		velocity.y = 0.f;
+	} else {
+		if (isAttacking) {
+			shape.setFillColor(sf::Color::Red);
+		}
+
+		if (isMovingForward) {
+			velocity = heading * moveForwardSpeed;
+		}
+		else {
+			velocity.x = 0.f;
+			velocity.y = 0.f;
+		}
+	}
+
+	if (!isBlocking && !isAttacking) {
+		shape.setFillColor(sf::Color::White);
+	}
+
+	shape.move(velocity * dt.asSeconds());
 }
 
-void PlayerBox::OnBlockPressed()
+void Player::ClientUpdate(sf::Time dt)
 {
-	isBlocking = true;
+	if (isBlocking) {
+		shape.setFillColor(sf::Color::Blue);
+	}
+	else {
+		if (isAttacking) {
+			shape.setFillColor(sf::Color::Red);
+		}
+	}
+
+	aimShape.setPosition(aimAt);
+
+	shape.move(velocity * dt.asSeconds());
 }
 
-void PlayerBox::OnBlockUnpressed()
+void Player::SetAimPos(sf::Vector2f aimingAt)
 {
-	isBlocking = false;
-}
-
-void PlayerBox::OnForwardPressed()
-{
-	isMovingForward = true;
-}
-
-void PlayerBox::OnForwardUnpressed()
-{
-	isMovingForward = false;
-}
-
-void PlayerBox::Update(sf::Time dt)
-{
-
+	aimAt = aimingAt;
 }

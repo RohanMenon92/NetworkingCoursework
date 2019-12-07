@@ -21,12 +21,14 @@ class Client
 {
 private:
 	//variables
-	Game game;
+	std::unique_ptr<Game> game;
+
 	sf::Event sfEvent;
 
 	std::string username;
+	bool isConnected;
 
-	bool mWaitingThreadEnd; 
+	bool mWaitingThreadEnd;
 	sf::Thread mThread;
 	sf::Clock mClock;
 
@@ -36,26 +38,45 @@ private:
 	sf::Clock dtClock;
 	float dt;
 
+	// Udp packet number Recieved
+	unsigned long long udpPacketNumberReceive;
+	// loss packets
+	unsigned long long lossPacket;
+	// time OutTimer
+	sf::Time timeOutTimer;
+
+	bool isAttackPressed = false;
+	bool isBlockPressed = false;
+	bool isForwardPressed = false;
+
+	sf::Vector2f mousePos;
+
 	// ip of the seveur
 	sf::IpAddress serverIP = "127.0.0.1";
 
 	//initialization
 	void InitGame(sf::Vector2f startPos);
 	void ConnectToServer();
-public:
-	//constructor/destructor
-	Client(std::string newUsername);
-	virtual ~Client();
 
 	//Functions
 	void ExecutionThread();
 	void ReceiveInput();
+	void ReceiveUdpPacket();
+	void UpdateBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity);
+	void UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, sf::Vector2f aimAt, float health, bool isAttacking, bool isBlocking);
+	void ReceiveTcpPacket();
 	void ClientTick(sf::Time);
+	Player* SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, float health);
+	Bullet* SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity);
+
+public:
+	std::vector<Player*> players;
+	std::vector<Bullet*> bullets;
+
+
+	//constructor/destructors
+	Client(std::string newUsername);
+	virtual ~Client();
 	void Init();
-	void Run();
-	void UpdateDT();
-	void UpdateSFMLEvents();
-	void Update();
-	void Render();
 };
 #endif

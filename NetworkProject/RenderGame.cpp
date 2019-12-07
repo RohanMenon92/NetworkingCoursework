@@ -19,28 +19,25 @@ void RenderGame::run() {
 
 sf::Vector2f RenderGame::OnSocketConnect(ClientRef* clientRef)
 {
-	PlayerBox playerBoxInstance;
-	clientRef->playerBox = &playerBoxInstance;
+	Player* playerBoxInstance = new Player();
 
-	float randomSpawnX = ((float)rand() / (float)RAND_MAX) * (mWindow->getSize().x - 0) + 0;
-	float randomSpawnY = ((float)rand() / (float)RAND_MAX) * (mWindow->getSize().x - 0) + 0;
+	float randomSpawnX = ((float)rand() / (float)RAND_MAX) * (mWindow->getSize().x*0.75f - mWindow->getSize().x*0.25f) + mWindow->getSize().x*0.25f;
+	float randomSpawnY = ((float)rand() / (float)RAND_MAX) * (mWindow->getSize().y*0.75f - mWindow->getSize().y*0.25f) + mWindow->getSize().y*0.25f;
 
-	//float randomSpawnX = 0 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (0 - mWindow->getSize().x)));
-	//float randomSpawnY = 0 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (0 - mWindow->getSize().y)));
+	sf::Vector2f spawnPosition(randomSpawnX, randomSpawnY);
+	playerBoxInstance->shape.setPosition(spawnPosition);
+	playerBoxes.push_back(playerBoxInstance);
 
-	sf::Vector2f spawnPosition = { randomSpawnX, randomSpawnY };
-	playerBoxInstance.shape.setPosition(spawnPosition);
-	playerBoxes.push_back(PlayerBox(playerBoxInstance));
+	clientRef->playerBox = playerBoxInstance;
 
 	std::cout << "[RENDER GAME] ON SOCKET CONNECT X:" << randomSpawnX << " Y:" << randomSpawnY << std::endl;
-
 	return spawnPosition;
 }
 
-void RenderGame::OnPlayerConnect(std::string username, PlayerBox* playerBox)
+void RenderGame::OnPlayerConnect(std::string username, Player playerBox)
 {
-	playerBox->playerID = username;
-	std::cout << "PLAYER HAS CONNECTED :" + username << std::endl;
+	std::cout << "OnPlayerConnect:" << playerBox.shape.getPosition().x << " " << playerBox.shape.getPosition().y << std::endl;
+	playerBox.playerID = username;
 }
 
 void RenderGame::OnPlayerAimMove(std::string username, sf::Vector2f position)
@@ -88,10 +85,57 @@ void RenderGame::UpdateSFMLEvents()
 	}
 }
 
+float RenderGame::GetRotationAim(sf::Vector2f currPos, sf::Vector2f aimPos) {
+	sf::Vector2f aimDir = aimPos - currPos;
+	sf::Vector2f aimDirNorm = aimDir / sqrt(pow(aimDir.x, 2) + pow(aimDir.y, 2));
+
+	float PI = 3.14159265f;
+	return (atan2(aimDirNorm.y, aimDirNorm.x) * 180 / PI) + 90;
+}
+
 void RenderGame::Update(sf::Time dt)
 {
 	//std::cout << "[RENDER GAME] UPDATE CALL DT:" << dt.asSeconds() << std::endl;
 
+	// Update PlaterBoxes
+	for (Player* playerBox : playerBoxes) {
+		// Set Position Over Time
+		playerBox->aimShape.setPosition(Interpolate2f(playerBox->aimShape.getPosition(), 
+			playerBox->aimAt, 
+			playerAimSpeed * dt.asSeconds()));
+
+		// Set Rotation Over Time
+		playerBox->shape.setRotation(InterpolateFloat(playerBox->shape.getRotation(), 
+			GetRotationAim(playerBox->aimShape.getPosition(), playerBox->aimAt), 
+			playerRotateSpeed * dt.asSeconds()));
+
+		// Fire Bullet If Possible
+		if (playerBox->isAttacking && playerBox->canAttackTimer == 0.f) {
+			playerBox->canAttackTimer = ServerConfiguration::PlayerReloadSpeed;
+
+			playerBox->bulletsFired++;
+			Bullet* bulletInstance = new Bullet();
+
+			bulletInstance->shape.setPosition(playerBox->shape.getPosition() + (playerBox->heading * 35.f));
+			bulletInstance->velocity = playerBox->heading * bulletInstance->maxSpeed;
+
+			bulletInstance->bulletID = playerBox->playerID + std::to_string(playerBox->bulletsFired);
+			bullets.push_back(bulletInstance);
+		}
+
+		playerBox->Update(dt);
+	}
+
+	for (size_t i = 0; i < bullets.size(); i++) {
+		bullets[i]->Update(dt);
+
+		sf::Vector2f bulletPos = bullets[i]->shape.getPosition();
+		if (bulletPos.x < 0 || bulletPos.x > mWindow->getSize().x
+			|| bulletPos.y < 0 || bulletPos.y > mWindow->getSize().y)
+		{
+			bullets.erase(bullets.begin() + i);
+		}
+	}
 }
 
 void RenderGame::Render()
@@ -101,13 +145,36 @@ void RenderGame::Render()
 	mWindow->clear();
 
 	// Render Player Boxes
-	for (PlayerBox playerBox : playerBoxes) {
-		mWindow->draw(playerBox.shape);
+	for (Player* playerBox : playerBoxes) {
+		mWindow->draw(playerBox->shape);
+		mWindow->draw(playerBox->aimShape);
 	}
 	// Render Player Bullets
-	for (Bullet bullet : bullets) {
-		mWindow->draw(bullet.shape);
+	for (Bullet* bullet : bullets) {
+		mWindow->draw(bullet->shape);
 	}
 
 	mWindow->display();
+}
+
+sf::Vector2f RenderGame::Interpolate2f(const sf::Vector2f & pointA, const sf::Vector2f & pointB, float factor)
+{
+	if (factor > 1.f)
+		factor = 1.f;
+
+	else if (factor < 0.f)
+		factor = 0.f;
+
+	return pointA + (pointB - pointA) * factor;
+}
+
+float RenderGame::InterpolateFloat(const float & pointA, const float & pointB, float factor)
+{
+	if (factor > 1.f)
+		factor = 1.f;
+
+	else if (factor < 0.f)
+		factor = 0.f;
+
+	return pointA + (pointB - pointA) * factor;
 }

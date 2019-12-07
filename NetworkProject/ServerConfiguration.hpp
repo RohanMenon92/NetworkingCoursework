@@ -9,7 +9,6 @@
 
 struct ClientRef
 {
-	std::shared_ptr<sf::TcpSocket> gameTcpPtr;
 	sf::TcpSocket gameTcpSocket;
 	sf::UdpSocket gameUdpSocket;
 
@@ -26,7 +25,7 @@ struct ClientRef
 	bool isBlockPressed = false;
 	bool isForwardPressed = false;
 
-	PlayerBox* playerBox;
+	Player* playerBox;
 	sf::Vector2f targetPosition;
 
 	std::string clientName;
@@ -50,6 +49,9 @@ namespace ServerConfiguration
 	const unsigned int GameTCPPort(22624);
 	const unsigned int ClientTCPPort(22625);
 	const unsigned int GameUDPPort(22623);
+	const unsigned int GameClientUDPPort(22624);
+	const float PlayerReloadSpeed = 5.f;
+	const std::string HostIPAddress = "127.0.0.1";
 } // namespace ServerConfiguration.
 
 #endif // SERVERCONFIGURATION_HPP_INCLUDED
