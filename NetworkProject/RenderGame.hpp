@@ -36,7 +36,7 @@ public:
 	RenderGame();
 	void run();
 	sf::Vector2f OnSocketConnect(ClientRef* clientRef);
-	void OnPlayerConnect(std::string username, Player playerBox);
+	void OnPlayerConnect(std::string username, Player* playerBox);
 	void OnPlayerAimMove(std::string username, sf::Vector2f position);
 	void OnPlayerDisconnect(std::string username);
 

@@ -34,10 +34,10 @@ sf::Vector2f RenderGame::OnSocketConnect(ClientRef* clientRef)
 	return spawnPosition;
 }
 
-void RenderGame::OnPlayerConnect(std::string username, Player playerBox)
+void RenderGame::OnPlayerConnect(std::string username, Player* playerBox)
 {
-	std::cout << "OnPlayerConnect:" << playerBox.shape.getPosition().x << " " << playerBox.shape.getPosition().y << std::endl;
-	playerBox.playerID = username;
+	std::cout << "OnPlayerConnect:" << playerBox->shape.getPosition().x << " " << playerBox->shape.getPosition().y << std::endl;
+	playerBox->playerID = username;
 }
 
 void RenderGame::OnPlayerAimMove(std::string username, sf::Vector2f position)
