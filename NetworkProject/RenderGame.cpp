@@ -127,8 +127,6 @@ void RenderGame::Update(sf::Time dt)
 	}
 
 	for (size_t i = 0; i < bullets.size(); i++) {
-		bullets[i]->Update(dt);
-
 		sf::Vector2f bulletPos = bullets[i]->shape.getPosition();
 		if (bulletPos.x < 0 || bulletPos.x > mWindow->getSize().x
 			|| bulletPos.y < 0 || bulletPos.y > mWindow->getSize().y)
@@ -145,8 +143,8 @@ void RenderGame::Update(sf::Time dt)
 			else if (bulletPos.y > mWindow->getSize().y) {
 				bullets[i]->shape.setPosition(bulletPos.x, 0);
 			}
-			bullets.erase(bullets.begin() + i);
 		}
+		bullets[i]->Update(dt);
 	}
 }
 
