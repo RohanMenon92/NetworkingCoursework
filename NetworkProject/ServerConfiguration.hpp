@@ -37,8 +37,10 @@ struct ClientRef
 
 namespace ServerConfiguration
 {
-	const float playerAimSpeed = 25.f;
-	const float playerInterpolateSpeed = 15.0f;
+	const float playerAimSpeed = 10.f;
+	const float playerInterpolateSpeed = 3.5f;
+	const float bulletInterpolateSpeed = 3.5f;
+
 	const float playerRotateSpeed = 10.f;
 	const float bulletSpeed = 20.f;
 

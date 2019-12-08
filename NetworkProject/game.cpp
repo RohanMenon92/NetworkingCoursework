@@ -108,16 +108,30 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 	{
 		Bullet* bullet = bulletPair.second;
 
+		sf::Vector2f bulletPos = bullet->shape.getPosition();
+
+		//Check Out of bounds and reverse for client side iteration
+		if (bulletPos.x < 0) {
+			bullet->shape.setPosition(window->getSize().x, bulletPos.y);
+			bullet->clientMoveTo = sf::Vector2f(window->getSize().x, bulletPos.y);
+		}
+		else if (bulletPos.x > window->getSize().x) {
+			bullet->shape.setPosition(0, bulletPos.y);
+			bullet->clientMoveTo = sf::Vector2f(0, bulletPos.y);
+		}
+		else if (bulletPos.y < 0) {
+			bullet->shape.setPosition(bulletPos.x, window->getSize().y);
+			bullet->clientMoveTo = sf::Vector2f(bulletPos.x, window->getSize().y);
+		}
+		else if (bulletPos.y > window->getSize().y) {
+			bullet->shape.setPosition(bulletPos.x, 0);
+			bullet->clientMoveTo = sf::Vector2f(bulletPos.x, 0);
+		}
+
+
 		bullet->shape.setPosition(Interpolate2f(bullet->shape.getPosition(),
 			bullet->clientMoveTo + bullet->velocity,
-			ServerConfiguration::bulletSpeed * dt.asSeconds()));
-
-		/*sf::Vector2f bulletPos = bullet->shape.getPosition();
-		if (bulletPos.x < 0 || bulletPos.x > window->getSize().x
-			|| bulletPos.y < 0 || bulletPos.y > window->getSize().y)
-		{
-			DespawnBullet(bullet->bulletID);
-		}*/
+			ServerConfiguration::bulletInterpolateSpeed * dt.asSeconds()));
 	}
 	//std::cout << "[GAME ] Update DONE " << std::endl;
 }

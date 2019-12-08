@@ -353,6 +353,7 @@ void Client::SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f ve
 
 	bullet->bulletID = bulletID;
 	bullet->shape.setPosition(pos);
+	bullet->SetClientMoveTo(pos);
 	bullet->velocity = velocity;
 	bullets.insert(std::make_pair(bulletID, bullet));
 	//pendingBullets.insert(std::pair<std::string, Bullet*>(bulletID, bullet));
