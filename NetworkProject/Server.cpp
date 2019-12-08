@@ -25,7 +25,7 @@ void Server::ExecutionThread()
 {
 	sf::Time stepInterval = sf::seconds(1.f / 60.f);
 	sf::Time stepTime = sf::Time::Zero;
-	sf::Time tickInterval = sf::seconds(1.f / 60.f);
+	sf::Time tickInterval = sf::seconds(25.f / 60.f);
 	sf::Time tickTime = sf::Time::Zero;
 	sf::Clock stepClock, tickClock;
 

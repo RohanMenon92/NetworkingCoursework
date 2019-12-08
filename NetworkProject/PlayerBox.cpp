@@ -76,11 +76,11 @@ void Player::Update(sf::Time dt)
 void Player::ClientUpdate(sf::Time dt)
 {
 	if (isBlocking) {
-		//shape.setFillColor(sf::Color::Blue);
+		shape.setFillColor(sf::Color::Blue);
 	}
 	else {
 		if (isAttacking) {
-			//shape.setFillColor(sf::Color::Red);
+			shape.setFillColor(sf::Color::Red);
 		}
 	}
 
