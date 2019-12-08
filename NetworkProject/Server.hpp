@@ -50,7 +50,7 @@ public:
 	void ServerTick(sf::Time dt);
 
 	// Sends the update to the clients.
-	void SendUpdate();
+	void SendUDPUpdate();
 
 	// Sends update to a particular client
 	void SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket);

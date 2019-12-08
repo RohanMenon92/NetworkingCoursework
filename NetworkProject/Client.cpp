@@ -321,7 +321,7 @@ void Client::UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f v
 	//std::cout << "[CLIENT UPDATE PLAYER] ABOUT TO ITERATE " << std::endl;
 
 	if (players.count(playerID) == 0) {
-		//SpawnPlayer(playerID, pos, velocity, health);
+		SpawnPlayer(playerID, pos, velocity, health);
 	}
 	else {
 		Player* player = players.find(playerID)->second;

@@ -25,7 +25,7 @@ void Server::ExecutionThread()
 {
 	sf::Time stepInterval = sf::seconds(1.f / 60.f);
 	sf::Time stepTime = sf::Time::Zero;
-	sf::Time tickInterval = sf::seconds(1.f / 10.f);
+	sf::Time tickInterval = sf::seconds(1.f / 60.f);
 	sf::Time tickTime = sf::Time::Zero;
 	sf::Clock stepClock, tickClock;
 
@@ -62,7 +62,7 @@ void Server::ExecutionThread()
 void Server::ServerTick(sf::Time dt) {
 	UpdateNumberOfPlayers();
 	UpdateTimeoutPlayers(dt);
-	SendUpdate();
+	SendUDPUpdate();
 }
 
 void Server::Init()
@@ -135,16 +135,18 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	unsigned long long packetId = client->lastPacketIdSent;
 
 	client->lastPacketIdSent++;
-	for (Player* playerBox : renderGame.playerBoxes) {
+	for (Player* player : renderGame.playerBoxes) {
 		sf::Packet packet;
 
+		std::cout << "[SEND DATA] Sending out PLAYER " << player->playerID <<  << std::endl;
+
 		packet << NetworkValues::RENDER_PLAYER << packetId
-			<< playerBox->playerID
-			<< playerBox->GetShape().getPosition().x << playerBox->GetShape().getPosition().y
-			<< playerBox->velocity.x << playerBox->velocity.y 
-			<< playerBox->aimAt.x << playerBox->aimAt.y
-			<< playerBox->health
-			<< playerBox->isAttacking << playerBox->isBlocking;
+			<< player->playerID
+			<< player->GetShape().getPosition().x << player->GetShape().getPosition().y
+			<< player->velocity.x << player->velocity.y 
+			<< player->aimAt.x << player->aimAt.y
+			<< player->health
+			<< player->isAttacking << player->isBlocking;
 
 		//client->gameTcpSocket.send(packet);
 		socket.send(packet, client->ip, client->udpPort);
@@ -154,7 +156,7 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	for (Bullet* bullet : renderGame.bullets) {
 		sf::Packet packet;
 		
-		std::cout << "Sending out bullet " << bullet->bulletID << std::endl;
+		std::cout << "[SEND DATA] Sending out bullet " << bullet->bulletID <<  << std::endl;
 
 		packet << NetworkValues::RENDER_BULLET << packetId
 			<< bullet->bulletID
@@ -167,7 +169,7 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	}
 }
 
-void Server::SendUpdate() {
+void Server::SendUDPUpdate() {
 	for (ClientRef* clientRef : m_clients)
 	{
 		if (clientRef->ingame)
