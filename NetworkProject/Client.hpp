@@ -15,7 +15,6 @@
 
 #include <Game.hpp>
 #include <NetworkValues.hpp>
-#include <ServerConfiguration.hpp>
 #include <MultiThreading.hpp>
 
 class Client

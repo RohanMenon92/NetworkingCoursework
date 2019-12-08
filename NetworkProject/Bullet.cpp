@@ -18,10 +18,15 @@ void Bullet::Update(sf::Time dt)
 
 void Bullet::ClientUpdate(sf::Time dt)
 {
-	shape.move(velocity * dt.asSeconds());
+	//shape.move(velocity * dt.asSeconds());
 }
 
 sf::CircleShape Bullet::GetShape()
 {
 	return shape;
+}
+
+void Bullet::SetClientMoveTo(sf::Vector2f movePos)
+{
+	clientMoveTo = movePos;
 }

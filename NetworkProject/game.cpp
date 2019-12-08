@@ -87,13 +87,20 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 	playersPtr = &playerPointer;
 	bulletsPtr = &bulletPointer;
 
-	//std::cout << "[GAME ] Update Called " << std::endl;
-
-	//Multithreading::renderMutex.lock();
+	std::cout << "[GAME ] Update Called " << dt.asSeconds() << std::endl;
 
 	for (auto playerPair : (*playersPtr))
 	{
 		Player* player = playerPair.second;
+
+		player->aimShape.setPosition(Interpolate2f(player->aimShape.getPosition(),
+			player->clientLookTo,
+			ServerConfiguration::playerAimSpeed * dt.asSeconds()));
+
+		player->shape.setPosition(Interpolate2f(player->shape.getPosition(),
+			player->clientMoveTo + player->velocity,
+			ServerConfiguration::playerInterpolateSpeed * dt.asSeconds()));
+
 		player->ClientUpdate(dt);
 	}
 
@@ -101,15 +108,17 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 	{
 		Bullet* bullet = bulletPair.second;
 
-		bullet->ClientUpdate(dt);
-		sf::Vector2f bulletPos = bullet->shape.getPosition();
+		bullet->shape.setPosition(Interpolate2f(bullet->shape.getPosition(),
+			bullet->clientMoveTo + bullet->velocity,
+			ServerConfiguration::bulletSpeed * dt.asSeconds()));
+
+		/*sf::Vector2f bulletPos = bullet->shape.getPosition();
 		if (bulletPos.x < 0 || bulletPos.x > window->getSize().x
 			|| bulletPos.y < 0 || bulletPos.y > window->getSize().y)
 		{
 			DespawnBullet(bullet->bulletID);
-		}
+		}*/
 	}
-	//Multithreading::renderMutex.unlock();
 	//std::cout << "[GAME ] Update DONE " << std::endl;
 }
 
@@ -164,4 +173,28 @@ void Game::RunGame(sf::Vector2f spawnPlayerPosition)
 	//	Update(dtClock.restart());
 	//	Render();
 	//}
+}
+
+
+
+sf::Vector2f Game::Interpolate2f(const sf::Vector2f & pointA, const sf::Vector2f & pointB, float factor)
+{
+	if (factor > 1.f)
+		factor = 1.f;
+
+	else if (factor < 0.f)
+		factor = 0.f;
+
+	return pointA + (pointB - pointA) * factor;
+}
+
+float Game::InterpolateFloat(const float & pointA, const float & pointB, float factor)
+{
+	if (factor > 1.f)
+		factor = 1.f;
+
+	else if (factor < 0.f)
+		factor = 0.f;
+
+	return pointA + (pointB - pointA) * factor;
 }

@@ -25,10 +25,6 @@ public:
 	sf::Clock dtClock;
 	float dt;
 
-	const float playerAimSpeed = 25.f;
-	const float playerRotateSpeed = 10.f;
-	const float bulletSpeed = 10.f;
-
 	std::vector<Player*> playerBoxes;
 	std::vector<Bullet*> bullets;
 

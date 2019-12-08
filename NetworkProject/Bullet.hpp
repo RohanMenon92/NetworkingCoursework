@@ -13,6 +13,8 @@ public:
 	std::string bulletID;
 	sf::CircleShape shape;
 	sf::Vector2f velocity;
+	sf::Vector2f clientMoveTo;
+
 	float maxSpeed;
 
 	Bullet(float radius = 5.f);
@@ -22,5 +24,6 @@ public:
 	void ClientUpdate(sf::Time dt);
 
 	sf::CircleShape GetShape();
+	void SetClientMoveTo(sf::Vector2f lookPos);
 };
 #endif

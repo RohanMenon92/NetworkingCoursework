@@ -73,6 +73,14 @@ void Player::Update(sf::Time dt)
 	shape.move(velocity * dt.asSeconds());
 }
 
+void Player::SetClientMoveTo(sf::Vector2f movePos) {
+	clientMoveTo = movePos;
+}
+
+void Player::SetClientLookTo(sf::Vector2f lookPos) {
+	clientLookTo = lookPos;
+}
+
 void Player::ClientUpdate(sf::Time dt)
 {
 	if (isBlocking) {
@@ -84,9 +92,10 @@ void Player::ClientUpdate(sf::Time dt)
 		}
 	}
 
-	aimShape.setPosition(aimAt);
+	if (!isBlocking && !isAttacking) {
+		shape.setFillColor(sf::Color::White);
+	}
 
-	shape.move(velocity * dt.asSeconds());
 }
 
 void Player::SetAimPos(sf::Vector2f aimingAt)

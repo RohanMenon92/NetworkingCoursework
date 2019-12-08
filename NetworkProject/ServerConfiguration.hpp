@@ -37,6 +37,11 @@ struct ClientRef
 
 namespace ServerConfiguration
 {
+	const float playerAimSpeed = 25.f;
+	const float playerInterpolateSpeed = 15.0f;
+	const float playerRotateSpeed = 10.f;
+	const float bulletSpeed = 20.f;
+
 	const unsigned int Version(002);
 	const float TickPerSec(60.f);
 	const sf::Time Ticktime = sf::seconds(1.f / TickPerSec);

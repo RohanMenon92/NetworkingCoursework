@@ -138,7 +138,7 @@ void Client::ExecutionThread()
 		}
 
 		// Sleep to prevent client from consuming 100% CPU
-		sf::sleep(sf::milliseconds(100));
+		//sf::sleep(sf::milliseconds(100));
 	}
 }
 
@@ -311,7 +311,7 @@ void Client::UpdateBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f v
 		SpawnBullet(bulletID, pos, velocity);
 	} else {
 		Bullet* bullet = bullets.find(bulletID)->second;
-		bullet->shape.setPosition(pos);
+		bullet->SetClientMoveTo(pos);
 		bullet->velocity = velocity;
 	}
 }
@@ -325,11 +325,11 @@ void Client::UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f v
 	}
 	else {
 		Player* player = players.find(playerID)->second;
-		player->shape.setPosition(pos);
+		player->SetClientMoveTo(pos);
+		player->SetClientLookTo(aimAt);
 		player->velocity = velocity;
 		player->isAttacking = isAttacking;
 		player->isBlocking = isBlocking;
-		player->aimAt = aimAt;
 		player->health = health;
 	}
 }
@@ -343,24 +343,18 @@ void Client::SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f ve
 	player->velocity = velocity;
 	player->health = health;
 
-	std::cout << "[SPAWN___PLAYER] Player is being added " << playerID << std::endl;
 	players.insert(std::make_pair(playerID, player));
-	std::cout << "[SPAWN___PLAYER] Player has been added " << playerID << std::endl;
 	//pendingPlayerBoxes.insert(std::pair<std::string, PlayerBox*>(playerID, playerBox));
 }
 
 void Client::SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity)
 {
-	std::cout << "Bullet has been created " << bulletID << std::endl;
-
 	Bullet* bullet = new Bullet();
 
 	bullet->bulletID = bulletID;
 	bullet->shape.setPosition(pos);
 	bullet->velocity = velocity;
-	std::cout << "[SPAWN___BULLET] Bullet is being added " << bulletID << std::endl;
 	bullets.insert(std::make_pair(bulletID, bullet));
-	std::cout << "[SPAWN___BULLET] Bullet has been added " << bulletID << std::endl;
 	//pendingBullets.insert(std::pair<std::string, Bullet*>(bulletID, bullet));
 }
 

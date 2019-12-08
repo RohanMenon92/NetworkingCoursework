@@ -33,7 +33,12 @@ public:
 	sf::Vector2f heading;
 	float targetRotation;
 
+	sf::Vector2f clientMoveTo;
+	sf::Vector2f clientLookTo;
+
 	void Update(sf::Time dt);
+	void SetClientMoveTo(sf::Vector2f movePos);
+	void SetClientLookTo(sf::Vector2f lookPos);
 	void ClientUpdate(sf::Time dt);
 	void SetAimPos(sf::Vector2f aimAt);
 

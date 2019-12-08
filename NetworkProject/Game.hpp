@@ -9,6 +9,8 @@
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Keyboard.hpp>
 
+
+#include <ServerConfiguration.hpp>
 #include <ResourceIdentifier.hpp>
 #include <PlayerBox.hpp>
 #include <Bullet.hpp>
@@ -43,6 +45,10 @@ public:
 	void initWindow();
 
 	void RunGame(sf::Vector2f spawnPlayerPosition);
+
+	sf::Vector2f Interpolate2f(const sf::Vector2f & pointA, const sf::Vector2f & pointB, float factor);
+
+	float InterpolateFloat(const float & pointA, const float & pointB, float factor);
 
 	//Functions
 	void ProcessInput();

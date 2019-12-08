@@ -102,12 +102,12 @@ void RenderGame::Update(sf::Time dt)
 		// Set Position Over Time
 		playerBox->aimShape.setPosition(Interpolate2f(playerBox->aimShape.getPosition(), 
 			playerBox->aimAt, 
-			playerAimSpeed * dt.asSeconds()));
+			ServerConfiguration::playerAimSpeed * dt.asSeconds()));
 
 		// Set Rotation Over Time
 		playerBox->shape.setRotation(InterpolateFloat(playerBox->shape.getRotation(), 
 			GetRotationAim(playerBox->aimShape.getPosition(), playerBox->aimAt), 
-			playerRotateSpeed * dt.asSeconds()));
+			ServerConfiguration::playerRotateSpeed * dt.asSeconds()));
 
 		// Fire Bullet If Possible
 		if (playerBox->isAttacking && playerBox->canAttackTimer == 0.f) {
