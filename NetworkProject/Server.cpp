@@ -138,7 +138,7 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	for (Player* player : renderGame.playerBoxes) {
 		sf::Packet packet;
 
-		std::cout << "[SEND DATA] Sending out PLAYER " << player->playerID << "  " << std::endl;
+		std::cout << "[SEND DATA] Sending out PLAYER " << player->playerID << " packet:" << client->lastPacketIdSent << std::endl;
 
 		packet << NetworkValues::RENDER_PLAYER << packetId
 			<< player->playerID
@@ -156,7 +156,7 @@ void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
 	for (Bullet* bullet : renderGame.bullets) {
 		sf::Packet packet;
 		
-		std::cout << "[SEND DATA] Sending out bullet " << bullet->bulletID << "  " << packet << std::endl;
+		std::cout << "[SEND DATA] Sending out bullet " << bullet->bulletID << "  packetID:" << client->lastPacketIdSent << std::endl;
 
 		packet << NetworkValues::RENDER_BULLET << packetId
 			<< bullet->bulletID
