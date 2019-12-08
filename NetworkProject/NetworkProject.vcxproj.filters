@@ -49,9 +49,12 @@
       <Filter>Source Files\Client</Filter>
     </ClCompile>
     <ClCompile Include="RenderGame.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Server</Filter>
     </ClCompile>
     <ClCompile Include="PlayerBox.cpp">
+      <Filter>Source Files\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
