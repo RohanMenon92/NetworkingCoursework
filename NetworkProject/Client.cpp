@@ -336,7 +336,7 @@ void Client::UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f v
 
 void Client::SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, float health)
 {
-	std::unique_ptr<Player> player(new Player());
+	Player* player = new Player();
 
 	player->playerID = playerID;
 	player->shape.setPosition(pos);
@@ -344,7 +344,7 @@ void Client::SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f ve
 	player->health = health;
 
 	std::cout << "[SPAWN___PLAYER] Player is being added " << playerID << std::endl;
-	players.insert(std::make_pair(playerID, player.get()));
+	players.insert(std::make_pair(playerID, player));
 	std::cout << "[SPAWN___PLAYER] Player has been added " << playerID << std::endl;
 	//pendingPlayerBoxes.insert(std::pair<std::string, PlayerBox*>(playerID, playerBox));
 }
@@ -353,13 +353,13 @@ void Client::SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f ve
 {
 	std::cout << "Bullet has been created " << bulletID << std::endl;
 
-	std::unique_ptr<Bullet> bullet(new Bullet());
+	Bullet* bullet = new Bullet();
 
 	bullet->bulletID = bulletID;
 	bullet->shape.setPosition(pos);
 	bullet->velocity = velocity;
 	std::cout << "[SPAWN___BULLET] Bullet is being added " << bulletID << std::endl;
-	bullets.insert(std::make_pair(bulletID, bullet.get()));
+	bullets.insert(std::make_pair(bulletID, bullet));
 	std::cout << "[SPAWN___BULLET] Bullet has been added " << bulletID << std::endl;
 	//pendingBullets.insert(std::pair<std::string, Bullet*>(bulletID, bullet));
 }

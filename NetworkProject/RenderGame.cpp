@@ -133,6 +133,18 @@ void RenderGame::Update(sf::Time dt)
 		if (bulletPos.x < 0 || bulletPos.x > mWindow->getSize().x
 			|| bulletPos.y < 0 || bulletPos.y > mWindow->getSize().y)
 		{
+			if (bulletPos.x < 0) {
+				bullets[i]->shape.setPosition(mWindow->getSize().x, bulletPos.y);
+			}
+			else if (bulletPos.x > mWindow->getSize().x) {
+				bullets[i]->shape.setPosition(0, bulletPos.y);
+			}
+			else if (bulletPos.y < 0) {
+				bullets[i]->shape.setPosition(bulletPos.x, mWindow->getSize().y);
+			}
+			else if (bulletPos.y > mWindow->getSize().y) {
+				bullets[i]->shape.setPosition(bulletPos.x, 0);
+			}
 			bullets.erase(bullets.begin() + i);
 		}
 	}
