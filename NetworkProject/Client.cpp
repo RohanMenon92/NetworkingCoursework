@@ -311,7 +311,7 @@ void Client::UpdateBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f v
 		SpawnBullet(bulletID, pos, velocity);
 	} else {
 		Bullet* bullet = bullets.find(bulletID)->second;
-		bullet->SetClientMoveTo(pos);
+		bullet->SetClientMoveTo(pos + velocity);
 		bullet->velocity = velocity;
 	}
 }
@@ -325,7 +325,7 @@ void Client::UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f v
 	}
 	else {
 		Player* player = players.find(playerID)->second;
-		player->SetClientMoveTo(pos);
+		player->SetClientMoveTo(pos + velocity);
 		player->SetClientLookTo(aimAt);
 		player->velocity = velocity;
 		player->isAttacking = isAttacking;

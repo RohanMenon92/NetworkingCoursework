@@ -98,8 +98,10 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 			ServerConfiguration::playerAimSpeed * dt.asSeconds()));
 
 		player->shape.setPosition(Interpolate2f(player->shape.getPosition(),
-			player->clientMoveTo + player->velocity,
+			player->clientMoveTo,
 			ServerConfiguration::playerInterpolateSpeed * dt.asSeconds()));
+
+		//player->shape.move(player->shape.getPosition() + player->velocity);
 
 		player->ClientUpdate(dt);
 	}
@@ -130,7 +132,7 @@ void Game::Update(sf::Time dt, std::map<std::string, Player*>& playerPointer, st
 
 
 		bullet->shape.setPosition(Interpolate2f(bullet->shape.getPosition(),
-			bullet->clientMoveTo + bullet->velocity,
+			bullet->clientMoveTo,
 			ServerConfiguration::bulletInterpolateSpeed * dt.asSeconds()));
 	}
 	//std::cout << "[GAME ] Update DONE " << std::endl;
