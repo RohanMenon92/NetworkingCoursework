@@ -149,7 +149,6 @@
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerBox.cpp" />
     <ClCompile Include="RenderGame.cpp" />
     <ClCompile Include="Server.cpp" />
@@ -158,6 +157,8 @@
     <ClInclude Include="Bullet.hpp" />
     <ClInclude Include="Client.hpp" />
     <ClInclude Include="Game.hpp" />
+    <ClInclude Include="GameConstants.hpp" />
+    <ClInclude Include="Messages.hpp" />
     <ClInclude Include="MultiThreading.hpp" />
     <ClInclude Include="MusicPlayer.hpp" />
     <ClInclude Include="NetworkValues.hpp" />

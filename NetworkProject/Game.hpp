@@ -31,6 +31,8 @@ private:
 	std::map<std::string, Bullet*>* bulletsPtr;
 
 public:
+	float gameTime = 0.f;
+
 	sf::RenderWindow *window;
 
 	sf::Vector2f mousePos;

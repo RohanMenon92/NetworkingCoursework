@@ -9,6 +9,8 @@
 
 struct ClientRef
 {
+	float latencyTime;
+
 	sf::TcpSocket gameTcpSocket;
 	sf::UdpSocket gameUdpSocket;
 
@@ -37,16 +39,7 @@ struct ClientRef
 
 namespace ServerConfiguration
 {
-	const float playerAimSpeed = 10.f;
-	const float playerInterpolateSpeed = 3.5f;
-	const float bulletInterpolateSpeed = 3.5f;
-
-	const float playerRotateSpeed = 10.f;
-	const float bulletSpeed = 20.f;
-
-	const unsigned int Version(002);
-	const float TickPerSec(60.f);
-	const sf::Time Ticktime = sf::seconds(1.f / TickPerSec);
+	const sf::Time Ticktime = sf::seconds(1.f / GameConstants::TickPerSec);
 
 	const sf::Time InformationServerTimeout = sf::seconds(30.f);
 	const sf::Time PendingSocketTimeout = sf::seconds(5.f);

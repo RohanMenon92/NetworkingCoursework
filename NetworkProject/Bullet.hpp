@@ -1,11 +1,12 @@
 #pragma once
-#ifndef BALL_HPP
-#define BALL_HPP
+#ifndef BULLET_HPP
+#define BULLET_HPP
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Drawable.hpp>
-
+#include<Messages.hpp>
+#include<GameConstants.hpp>
 
 class Bullet
 {
@@ -17,13 +18,20 @@ public:
 
 	float maxSpeed;
 
+	// Notifies to not render bullet anymore
+	bool isDead = false;
+	// Notifies to not send bullet anymore after sending dead update
+	int isDeadSentCount = GameConstants::onKillSendTimeout;
+
+	std::vector<BulletMessage> messagesStored;
+
 	Bullet(float radius = 5.f);
 	virtual ~Bullet();
 
 	void Update(sf::Time dt);
 	void ClientUpdate(sf::Time dt);
 
-	sf::CircleShape GetShape();
-	void SetClientMoveTo(sf::Vector2f lookPos);
+	void AddMessage(const BulletMessage &msg);
+	sf::Vector2f PredictPosition(float time);
 };
 #endif

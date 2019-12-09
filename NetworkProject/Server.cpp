@@ -11,7 +11,6 @@ Server::Server()
 	, m_numberOfPlayers(0)
 	, m_maximumPlayersCapacity(4)
 {
-
 }
 
 Server::~Server()
@@ -25,7 +24,7 @@ void Server::ExecutionThread()
 {
 	sf::Time stepInterval = sf::seconds(1.f / 60.f);
 	sf::Time stepTime = sf::Time::Zero;
-	sf::Time tickInterval = sf::seconds(25.f / 60.f);
+	sf::Time tickInterval = sf::seconds(20.f / 60.f);
 	sf::Time tickTime = sf::Time::Zero;
 	sf::Clock stepClock, tickClock;
 
@@ -55,14 +54,14 @@ void Server::ExecutionThread()
 		}
 
 		// Sleep to prevent server from consuming 100% CPU
-		sf::sleep(sf::milliseconds(200));
+		sf::sleep(sf::milliseconds(100));
 	}
 }
 
 void Server::ServerTick(sf::Time dt) {
 	UpdateNumberOfPlayers();
 	UpdateTimeoutPlayers(dt);
-	SendUDPUpdate();
+	SendUDPUpdate(dt);
 }
 
 void Server::Init()
@@ -113,8 +112,9 @@ void Server::HandleIncomingConnections()
 		sf::Vector2f spawnPosition = renderGame.OnSocketConnect(clientRef);
 
 		sf::Packet packet;
+		// Send current server time for synronization
 		packet << NetworkValues::CONNECT << 
-			spawnPosition.x << spawnPosition.y;
+			spawnPosition.x << spawnPosition.y << serverTime;
 
 		std::cout << "[GAME_SERVER] Sent CONNECT packet " << clientRef->gameTcpSocket.getRemoteAddress() << std::endl;
 		clientRef->gameTcpSocket.send(packet);
@@ -131,52 +131,91 @@ void Server::ReceiveInputFromSocket()
 	//ReceiveInputThroughUDP();
 }
 
-void Server::SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket) {
+void Server::SendUDPUpdateToClient(ClientRef* client) {
 	unsigned long long packetId = client->lastPacketIdSent;
 
 	client->lastPacketIdSent++;
-	for (Player* player : renderGame.playerBoxes) {
-		sf::Packet packet;
+	for (Player* player : renderGame.players) {
+		//if DeadSignal sent enough times
+		if (player->isDeadSentCount > 0) {
 
-		std::cout << "[SEND DATA] Sending out PLAYER " << player->playerID << " packet:" << client->lastPacketIdSent << std::endl;
+			sf::Packet packet;
 
-		packet << NetworkValues::RENDER_PLAYER << packetId
-			<< player->playerID
-			<< player->GetShape().getPosition().x << player->GetShape().getPosition().y
-			<< player->velocity.x << player->velocity.y 
-			<< player->aimAt.x << player->aimAt.y
-			<< player->health
-			<< player->isAttacking << player->isBlocking;
+			if (player->isDead) {
+				// Iterate through timeout and send dead signal
+				player->isDeadSentCount--;
+			}
 
-		//client->gameTcpSocket.send(packet);
-		socket.send(packet, client->ip, client->udpPort);
-		packet.clear();
+			//std::cout << "[SEND DATA] Sending out PLAYER " << player->playerID << " packet:" << client->lastPacketIdSent << std::endl;
+
+			PlayerMessage playerMessage;
+			playerMessage.playerID = player->playerID;
+			playerMessage.position = player->shape.getPosition();
+			playerMessage.aimAt = player->aimAt;
+			playerMessage.health = player->health;
+			playerMessage.isAttacking = player->isAttacking;
+			playerMessage.isBlocking = player->isBlocking;
+			playerMessage.time = serverTime - client->latencyTime;
+			playerMessage.isDead = player->isDead;
+
+			packet << NetworkValues::RENDER_PLAYER << packetId
+				<< playerMessage.playerID
+				<< playerMessage.position.x << playerMessage.position.y
+				<< playerMessage.aimAt.x << playerMessage.aimAt.y
+				<< playerMessage.health
+				<< playerMessage.isAttacking
+				<< playerMessage.isBlocking
+				<< playerMessage.time
+				<< playerMessage.isDead;
+
+			//client->gameTcpSocket.send(packet);
+			m_gameUdpSocket.send(packet, client->ip, client->udpPort);
+			packet.clear();
+		}
 	}
 
 	for (Bullet* bullet : renderGame.bullets) {
-		sf::Packet packet;
-		
-		std::cout << "[SEND DATA] Sending out bullet " << bullet->bulletID << "  packetID:" << client->lastPacketIdSent << std::endl;
+		// If DeadSignal sent enough times
+		if (bullet->isDeadSentCount > 0) {
 
-		packet << NetworkValues::RENDER_BULLET << packetId
-			<< bullet->bulletID
-			<< bullet->shape.getPosition().x << bullet->shape.getPosition().y
-			<< bullet->velocity.x << bullet->velocity.y;
+			sf::Packet packet;
 
-		//client->gameTcpSocket.send(packet);
-		socket.send(packet, client->ip, client->udpPort);
-		packet.clear();
+			if (bullet->isDead) {
+				// Iterate through timeout and send dead signal
+				bullet->isDeadSentCount--;
+			}
+
+			//std::cout << "[SEND DATA] Sending out bullet " << bullet->bulletID << "  packetID:" << client->lastPacketIdSent << std::endl;
+
+			BulletMessage bulletMessage;
+			bulletMessage.bulletID = bullet->bulletID;
+			bulletMessage.isDead = bullet->isDead;
+			bulletMessage.position = bullet->shape.getPosition();
+			bulletMessage.time = serverTime - client->latencyTime;
+
+			packet << NetworkValues::RENDER_BULLET << packetId
+				<< bulletMessage.bulletID
+				<< bulletMessage.position.x << bulletMessage.position.y
+				<< bulletMessage.time
+				<< bulletMessage.isDead;
+
+			//client->gameTcpSocket.send(packet);
+			m_gameUdpSocket.send(packet, client->ip, client->udpPort);
+			packet.clear();
+		}
 	}
 }
 
-void Server::SendUDPUpdate() {
+void Server::SendUDPUpdate(sf::Time dt) {
+	// update gameTime
+	serverTime += dt.asSeconds();
+
+	// Iterate and send update
 	for (ClientRef* clientRef : m_clients)
 	{
 		if (clientRef->ingame)
 		{
-			// Multithreading worlds.
-			// Can't multithread network stuff.
-			SendUDPUpdateToClient(clientRef, m_gameUdpSocket);
+			SendUDPUpdateToClient(clientRef);
 		}
 	}
 }
@@ -217,8 +256,6 @@ void Server::Shutdown()
 
 void Server::DisconnectPlayer(ClientRef* clientRef, std::string reason)
 {
-
-	// Dissociate the account and the client.
 	try
 	{
 		auto clientItr = std::find_if(m_clients.begin(), m_clients.end(), [clientRef](ClientRef* client) {
@@ -322,32 +359,17 @@ void Server::ReceiveThroughTCP()
 				{
 					std::string username;
 					unsigned short udpPort;
-					packet >> username >> udpPort;
+					float returnedServerTime;
+					packet >> username >> udpPort >> returnedServerTime;
 
+					// Store username, udpPort for client and latency based on roundtrip communication
 					client->clientName = username;
 					client->udpPort = udpPort;
-
-					// Make connection to udp send
+					client->latencyTime = (serverTime - returnedServerTime)/2;
 
 					renderGame.OnPlayerConnect(username, playerBox);
+					// Make connection to udp non blocking
 					client->gameUdpSocket.setBlocking(false);
-
-					//// Send Player Spawn event to all tcp clients Can be simplified
-					//for (auto sendClientItr(m_clients.begin()); sendClientItr != m_clients.end();)
-					//{
-					//	ClientRef* sendClient = (*sendClientItr);
-					//	sf::Packet sendPacket;
-
-					//	if (sendClient->gameTcpConnected) {
-					//		// Send control packet to move object on server
-					//		sendPacket << NetworkValues::SPAWN_PLAYER << username
-					//			<< playerBox->shape.getPosition().x << playerBox->shape.getPosition().y
-					//			<< playerBox->velocity.x << playerBox->velocity.y;
-					//			//<< playerBox->isAttacking << playerBox->isBlocking;
-
-					//		sendClient->gameTcpSocket.send(sendPacket);
-					//	}
-					//}
 				}
 				break;
 				case NetworkValues::DISCONNECT:
@@ -367,27 +389,27 @@ void Server::ReceiveThroughTCP()
 				{
 					if (playerBox != NULL) {
 						// Get Packet Data here, mose position and key pressed
-						float mousePositionX;
-						float mousePositionY;
-						bool isForwardPressed;
-						bool isAttackPressed;
-						bool isBlockPressed;
+						ControlMessage controlMessage;
 
-						packet >> mousePositionX >> mousePositionY >> isForwardPressed >> isAttackPressed >> isBlockPressed;
+						packet >> controlMessage.mousePos.x >> controlMessage.mousePos.y
+							>> controlMessage.isForwardPressed
+							>> controlMessage.isAttackPressed
+							>> controlMessage.isBlockPressed >> 
+							controlMessage.atTime;
 
 						//std::cout << "[SERVER] Got [CONTROL] Signal" 
 						//	<< " MousePos::" << mousePositionX << " " << mousePositionY
 						//	<< " KeyValues::" << isForwardPressed << isAttackPressed << isBlockPressed
 						//	<< std::endl;
 
-						playerBox->isAttacking = isAttackPressed;
-						playerBox->isMovingForward = isForwardPressed;
-						playerBox->isBlocking = isBlockPressed;
+						// Update client Latency here as well? How?
 
+						// Set looking at position and interaction properties
+						playerBox->isMovingForward = controlMessage.isForwardPressed;
+						playerBox->isAttacking = controlMessage.isAttackPressed;
+						playerBox->isBlocking = controlMessage.isBlockPressed;
 
-						// Set looking at position
-						sf::Vector2f aimAt(mousePositionX, mousePositionY);
-						playerBox->SetAimPos(aimAt);
+						playerBox->SetAimPos(controlMessage.mousePos);
 					}
 				}
 				break;
@@ -410,9 +432,9 @@ void Server::ReceiveThroughTCP()
 void Server::ReceiveThroughUDP()
 {
 	// Check if we received any UDP packet.
-	sf::Packet packet;
-	sf::IpAddress ip;
-	short unsigned int port;
+	//sf::Packet packet;
+	//sf::IpAddress ip;
+	//short unsigned int port;
 
 	//while (m_gameUdpSocket.receive(packet, ip, port) == sf::UdpSocket::Status::Done)
 	//{

@@ -21,6 +21,8 @@ class Client
 {
 private:
 	//variables
+	sf::Font fontText;
+
 	std::unique_ptr<Game> game;
 
 	sf::Event sfEvent;
@@ -55,19 +57,18 @@ private:
 	sf::IpAddress serverIP = ServerConfiguration::HostIPAddress;
 
 	//initialization
-	void InitGame(sf::Vector2f startPos);
 	void ConnectToServer();
 
 	//Functions
-	void ExecutionThread();
+	void SetupClient();
 	void ReceiveInput();
 	void ReceiveUdpPacket();
-	void UpdateBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity);
-	void UpdatePlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, sf::Vector2f aimAt, float health, bool isAttacking, bool isBlocking);
 	void ReceiveTcpPacket();
 	void ClientTick(sf::Time);
-	void SpawnPlayer(std::string playerID, sf::Vector2f pos, sf::Vector2f velocity, float health);
-	void SpawnBullet(std::string bulletID, sf::Vector2f pos, sf::Vector2f velocity);
+	void UpdatePlayer(PlayerMessage playerMessage);
+	void SpawnPlayer(PlayerMessage playerMessage);
+	void UpdateBullet(BulletMessage bulletMessage);
+	void SpawnBullet(BulletMessage bulletMessage);
 
 public:
 	std::map<std::string, Player*> players;
@@ -77,5 +78,6 @@ public:
 	Client(std::string newUsername);
 	virtual ~Client();
 	void Init();
+	void InitGame(sf::Vector2f startPos, float startTime);
 };
 #endif

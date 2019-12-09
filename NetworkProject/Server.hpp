@@ -28,6 +28,8 @@
 class Server
 {
 public:
+	float serverTime = 0.f;
+
 	// Constructor.
 	Server();
 
@@ -50,10 +52,10 @@ public:
 	void ServerTick(sf::Time dt);
 
 	// Sends the update to the clients.
-	void SendUDPUpdate();
+	void SendUDPUpdate(sf::Time dt);
 
 	// Sends update to a particular client
-	void SendUDPUpdateToClient(ClientRef* client, sf::UdpSocket& socket);
+	void SendUDPUpdateToClient(ClientRef* client);
 	
 	// Returns the number of players currently online.
 	unsigned int GetNumberOfPlayers() const;

@@ -19,13 +19,15 @@
 class RenderGame
 {
 public:
+	sf::Font fontText;
+
 	sf::RenderWindow *mWindow;
 	sf::Event sfEvent;
 
 	sf::Clock dtClock;
 	float dt;
 
-	std::vector<Player*> playerBoxes;
+	std::vector<Player*> players;
 	std::vector<Bullet*> bullets;
 
 public:

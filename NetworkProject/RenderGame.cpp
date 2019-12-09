@@ -1,9 +1,10 @@
 #include "RenderGame.hpp"
 
 RenderGame::RenderGame()
-	:playerBoxes()
+	:players()
 	,bullets()
 {
+	fontText.loadFromFile("Antonio.ttf");
 	this->InitWindow();
 }
 
@@ -19,29 +20,27 @@ void RenderGame::run() {
 
 sf::Vector2f RenderGame::OnSocketConnect(ClientRef* clientRef)
 {
-	Player* playerBoxInstance = new Player();
+	Player* playerInstance = new Player();
 
 	float randomSpawnX = ((float)rand() / (float)RAND_MAX) * (mWindow->getSize().x*0.75f - mWindow->getSize().x*0.25f) + mWindow->getSize().x*0.25f;
 	float randomSpawnY = ((float)rand() / (float)RAND_MAX) * (mWindow->getSize().y*0.75f - mWindow->getSize().y*0.25f) + mWindow->getSize().y*0.25f;
 
 	sf::Vector2f spawnPosition(randomSpawnX, randomSpawnY);
-	playerBoxInstance->shape.setPosition(spawnPosition);
-	playerBoxes.push_back(playerBoxInstance);
+	playerInstance->shape.setPosition(spawnPosition);
+	playerInstance->healthHolder.setFont(fontText);
+	playerInstance->usernameHolder.setFont(fontText);
+	players.push_back(playerInstance);
 
-	clientRef->playerBox = playerBoxInstance;
+	clientRef->playerBox = playerInstance;
 
 	std::cout << "[RENDER GAME] ON SOCKET CONNECT X:" << randomSpawnX << " Y:" << randomSpawnY << std::endl;
 	return spawnPosition;
 }
 
-void RenderGame::OnPlayerConnect(std::string username, Player* playerBox)
+void RenderGame::OnPlayerConnect(std::string username, Player* player)
 {
-	std::cout << "OnPlayerConnect:" << playerBox->GetShape().getPosition().x << " " << playerBox->GetShape().getPosition().y << std::endl;
-	playerBox->playerID = username;
-}
-
-void RenderGame::OnPlayerAimMove(std::string username, sf::Vector2f position)
-{
+	std::cout << "OnPlayerConnect:" << player->shape.getPosition().x << " " << player->shape.getPosition().y << std::endl;
+	player->playerID = username;
 }
 
 void RenderGame::OnPlayerDisconnect(std::string username)
@@ -96,41 +95,13 @@ float RenderGame::GetRotationAim(sf::Vector2f currPos, sf::Vector2f aimPos) {
 void RenderGame::Update(sf::Time dt)
 {
 	//std::cout << "[RENDER GAME] UPDATE CALL DT:" << dt.asSeconds() << std::endl;
-
-	// Update PlaterBoxes
-	for (Player* playerBox : playerBoxes) {
-		// Set Position Over Time
-		playerBox->aimShape.setPosition(Interpolate2f(playerBox->aimShape.getPosition(), 
-			playerBox->aimAt, 
-			ServerConfiguration::playerAimSpeed * dt.asSeconds()));
-
-		// Set Rotation Over Time
-		playerBox->shape.setRotation(InterpolateFloat(playerBox->shape.getRotation(), 
-			GetRotationAim(playerBox->aimShape.getPosition(), playerBox->aimAt), 
-			ServerConfiguration::playerRotateSpeed * dt.asSeconds()));
-
-		// Fire Bullet If Possible
-		if (playerBox->isAttacking && playerBox->canAttackTimer == 0.f) {
-			playerBox->canAttackTimer = ServerConfiguration::PlayerReloadSpeed;
-
-			playerBox->bulletsFired++;
-			Bullet* bulletInstance = new Bullet();
-
-			bulletInstance->shape.setPosition(playerBox->shape.getPosition() + (playerBox->heading * 35.f));
-			bulletInstance->velocity = playerBox->heading * bulletInstance->maxSpeed;
-
-			bulletInstance->bulletID = playerBox->playerID + std::to_string(playerBox->bulletsFired);
-			bullets.push_back(bulletInstance);
-		}
-
-		playerBox->Update(dt);
-	}
-
 	for (size_t i = 0; i < bullets.size(); i++) {
-		sf::Vector2f bulletPos = bullets[i]->shape.getPosition();
+		Bullet* bullet = bullets[i];
+
+		sf::Vector2f bulletPos = bullet->shape.getPosition();
 
 		//Check Out of bounds and reverse
-		if (bulletPos.x < 0) {
+		/*if (bulletPos.x < 0) {
 			bullets[i]->shape.setPosition(mWindow->getSize().x, bulletPos.y);
 		}
 		else if (bulletPos.x > mWindow->getSize().x) {
@@ -141,8 +112,84 @@ void RenderGame::Update(sf::Time dt)
 		}
 		else if (bulletPos.y > mWindow->getSize().y) {
 			bullets[i]->shape.setPosition(bulletPos.x, 0);
+		}*/
+
+		// Kill if out of render view
+		if (bulletPos.x < 0) {
+			bullet->isDead = true;
 		}
-		bullets[i]->Update(dt);
+		else if (bulletPos.x > mWindow->getSize().x) {
+			bullet->isDead = true;
+		}
+		else if (bulletPos.y < 0) {
+			bullet->isDead = true;
+		}
+		else if (bulletPos.y > mWindow->getSize().y) {
+			bullet->isDead = true;
+		}
+		bullet->Update(dt);
+
+		// Check Player collision
+		for (size_t k = 0; k < players.size(); k++)
+		{
+			if (!bullet->isDead) {
+				Player* player = players[k];
+				if (bullet->shape.getGlobalBounds().intersects(player->shape.getGlobalBounds()))
+				{
+					// Check if same player fired
+					if (bullet->bulletID.find(player->playerID) == std::string::npos) {
+						// Not same player do damage and check shield
+						if (player->isBlocking) {
+							bullet->velocity = -bullet->velocity;
+						}
+						else {
+							// DamagePlayer
+							player->health--;
+							bullet->isDead = true;
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
+
+	// Update PlaterBoxes
+	for (Player* player : players) {
+		// Set Position Over Time
+		player->aimShape.setPosition(Interpolate2f(player->aimShape.getPosition(), 
+			player->aimAt, 
+			GameConstants::playerAimSpeed * dt.asSeconds()));
+
+		// Set Rotation Over Time
+		player->shape.setRotation(InterpolateFloat(player->shape.getRotation(),
+			GetRotationAim(player->aimShape.getPosition(), player->aimAt),
+			GameConstants::playerRotateSpeed * dt.asSeconds()));
+
+		player->shape.setPosition(Interpolate2f(player->shape.getPosition(),
+			player->shape.getPosition() + player->velocity,
+			GameConstants::playerSpeed * dt.asSeconds()));
+		// Fire Bullet If Possible
+		if (player->isAttacking && player->canAttackTimer == 0.f) {
+			player->canAttackTimer = ServerConfiguration::PlayerReloadSpeed;
+
+			player->bulletsFired++;
+			Bullet* bulletInstance = new Bullet();
+
+			bulletInstance->shape.setPosition(player->shape.getPosition() + (player->heading * 35.f));
+			bulletInstance->velocity = player->heading * bulletInstance->maxSpeed;
+
+			bulletInstance->bulletID = player->playerID + std::to_string(player->bulletsFired);
+			bullets.push_back(bulletInstance);
+		}
+
+		// Update halth
+		if (player->health <= 0) {
+			// kill player
+			player->isDead = true;
+		}
+		player->ServerUpdate(dt);
 	}
 }
 
@@ -153,35 +200,41 @@ void RenderGame::Render()
 	mWindow->clear();
 
 	// Render Player Boxes
-	for (Player* playerBox : playerBoxes) {
-		mWindow->draw(playerBox->GetShape());
-		mWindow->draw(playerBox->GetAimShape());
+	for (Player* player : players) {
+		if (!player->isDead) {
+			mWindow->draw(player->shape);
+			mWindow->draw(player->aimShape);
+			mWindow->draw(player->healthHolder);
+			mWindow->draw(player->usernameHolder);
+		}
 	}
 	// Render Player Bullets
 	for (Bullet* bullet : bullets) {
-		mWindow->draw(bullet->GetShape());
+		if (!bullet->isDead) {
+			mWindow->draw(bullet->shape);
+		}
 	}
 	mWindow->display();
 }
 
 sf::Vector2f RenderGame::Interpolate2f(const sf::Vector2f & pointA, const sf::Vector2f & pointB, float factor)
 {
-	if (factor > 1.f)
-		factor = 1.f;
+	//if (factor > 1.f)
+	//	factor = 1.f;
 
-	else if (factor < 0.f)
-		factor = 0.f;
+	//else if (factor < 0.f)
+	//	factor = 0.f;
 
 	return pointA + (pointB - pointA) * factor;
 }
 
 float RenderGame::InterpolateFloat(const float & pointA, const float & pointB, float factor)
 {
-	if (factor > 1.f)
-		factor = 1.f;
+	//if (factor > 1.f)
+	//	factor = 1.f;
 
-	else if (factor < 0.f)
-		factor = 0.f;
+	//else if (factor < 0.f)
+	//	factor = 0.f;
 
-	return pointA + (pointB - pointA) * factor;
+	return pointA + (pointB) * factor;
 }

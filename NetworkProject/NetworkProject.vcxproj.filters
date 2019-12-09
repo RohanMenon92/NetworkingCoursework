@@ -45,9 +45,6 @@
     <ClCompile Include="game.cpp">
       <Filter>Source Files\Client</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Source Files\Client</Filter>
-    </ClCompile>
     <ClCompile Include="RenderGame.cpp">
       <Filter>Source Files\Server</Filter>
     </ClCompile>
@@ -99,6 +96,12 @@
       <Filter>Header Files\Client</Filter>
     </ClInclude>
     <ClInclude Include="Bullet.hpp">
+      <Filter>Header Files\Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Messages.hpp">
+      <Filter>Header Files\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="GameConstants.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
   </ItemGroup>
