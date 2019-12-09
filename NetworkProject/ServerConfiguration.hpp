@@ -9,6 +9,8 @@
 
 struct ClientRef
 {
+	int playerNumber;
+
 	float latencyTime;
 
 	sf::TcpSocket gameTcpSocket;

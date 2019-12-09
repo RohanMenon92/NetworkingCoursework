@@ -11,12 +11,12 @@
 class Bullet
 {
 public:
+	int playerNumber;
+
 	std::string bulletID;
 	sf::CircleShape shape;
 	sf::Vector2f velocity;
 	sf::Vector2f clientMoveTo;
-
-	float maxSpeed;
 
 	// Notifies to not render bullet anymore
 	bool isDead = false;
@@ -25,7 +25,7 @@ public:
 
 	std::vector<BulletMessage> messagesStored;
 
-	Bullet(float radius = 5.f);
+	Bullet(int playerNumber, float radius = 5.f);
 	virtual ~Bullet();
 
 	void Update(sf::Time dt);

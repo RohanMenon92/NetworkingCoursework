@@ -30,6 +30,8 @@ class Server
 public:
 	float serverTime = 0.f;
 
+	int playerNumber = 0;
+
 	// Constructor.
 	Server();
 

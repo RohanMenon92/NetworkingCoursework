@@ -1,11 +1,12 @@
 #include<ServerConfiguration.hpp>
 #include "Bullet.hpp"
 
-Bullet::Bullet(float radius)
-	: velocity(0.f, 0.f), maxSpeed(100.f)
+Bullet::Bullet(int playerNumber, float radius)
+	: velocity(0.f, 0.f)
+	,playerNumber(playerNumber)
 {
 	this->shape.setRadius(radius);
-	this->shape.setFillColor(sf::Color::Red);
+	this->shape.setFillColor(GameConstants::colorPlayerMap[playerNumber]);
 }
 
 Bullet::~Bullet()

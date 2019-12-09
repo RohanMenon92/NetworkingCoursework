@@ -1,32 +1,38 @@
 #include "PlayerBox.hpp"
 
-Player::Player() :
+Player::Player(int playerNumber) :
 	isAttacking(false)
+	, playerNumber(playerNumber)
 	, isBlocking(false)
 	, isMovingForward(false)
 	, targetRotation(0)
 	, aimAt(100.f, 100.f)
 	, bulletsFired(0)
-	, aimShape(5.f)
+	, aimShape(10.f)
 	, health(GameConstants::healthMax)
 {
 	shape.setRadius(25.f);
 	shape.setFillColor(sf::Color::White);
 	shape.setOrigin(25.f, 25.f);
-	aimShape.setFillColor(sf::Color::Green);
+	aimShape.setFillColor(GameConstants::colorPlayerMap[playerNumber]);
 	aimShape.setOrigin(5.f, 5.f);
 
 	healthHolder.setCharacterSize(20);
 	healthHolder.setStyle(sf::Text::Regular);
-	healthHolder.setFillColor(sf::Color::Green);
+	healthHolder.setFillColor(GameConstants::colorPlayerMap[playerNumber]);
 
 	usernameHolder.setCharacterSize(30);
 	usernameHolder.setStyle(sf::Text::Bold);
-	usernameHolder.setFillColor(sf::Color::Green);
+	usernameHolder.setFillColor(GameConstants::colorPlayerMap[playerNumber]);
 }
 
 Player::~Player()
 {
+}
+
+void Player::OnHit()
+{
+	health--;
 }
 
 void Player::ServerUpdate(sf::Time dt)
@@ -86,7 +92,7 @@ void Player::SetClientLookTo(sf::Vector2f lookPos) {
 void Player::ClientUpdate(sf::Time dt)
 {
 	if (isBlocking) {
-		shape.setFillColor(sf::Color::Blue);
+		shape.setFillColor(GameConstants::colorPlayerMap[playerNumber]);
 	}
 	else {
 		if (isAttacking) {

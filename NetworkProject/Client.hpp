@@ -30,7 +30,7 @@ private:
 	std::string username;
 	bool isConnected;
 
-	bool mWaitingThreadEnd;
+	bool dontExecuteClient;
 	//sf::Thread mThread;
 	sf::Clock mClock;
 
@@ -71,6 +71,7 @@ private:
 	void SpawnBullet(BulletMessage bulletMessage);
 
 public:
+	int playerNumber;
 	std::map<std::string, Player*> players;
 	std::map<std::string, Bullet*> bullets;
 

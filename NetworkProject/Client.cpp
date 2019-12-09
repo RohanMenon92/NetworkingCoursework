@@ -2,7 +2,7 @@
 
 Client::Client(std::string newUsername)
 	: isConnected(false)
-	, mWaitingThreadEnd(false)
+	, dontExecuteClient(false)
 	, controlSocket()
 	, renderSocket()
 	, udpPacketNumberReceive(0)
@@ -35,8 +35,7 @@ Client::~Client()
 
 	controlSocket.send(packet);
 
-	mWaitingThreadEnd = true;
-	//mThread.wait();
+	dontExecuteClient = true;
 }
 
 void Client::Init()
@@ -56,8 +55,6 @@ void Client::InitGame(sf::Vector2f startPos, float startTime)
 
 void Client::ConnectToServer()
 {
-	//std::cout << "[GAME_CLIENT] IN CONNECT TO SERVER " << std::endl;
-	sf::Packet packet;
 	// Connect to TCP
 	sf::TcpSocket::Status status = controlSocket.connect(serverIP, ServerConfiguration::GameTCPPort, sf::seconds(5.f));
 
@@ -75,18 +72,19 @@ void Client::ConnectToServer()
 		unsigned int netCode(0);
 		connectPacket >> netCode;
 
-		// On Connect packet, extract server defined spawn position
 		if (netCode != NetworkValues::CONNECT) {
-			//std::cout << "[GAME_CLIENT] [ERROR] Did not recieve Connect packet! " << std::endl;
+			std::cout << "[GAME_CLIENT] [ERROR] Did not recieve Connect packet! " << std::endl;
 			return;
 		}
 
+		// On Connect packet, extract server defined spawn position and player number
 		sf::Vector2f startPos;
 		float serverTime;
-		connectPacket >> startPos.x >> startPos.y >> serverTime;
+		connectPacket >> startPos.x >> startPos.y >> this->playerNumber >> serverTime;
 
 		std::cout << "[GAME_CLIENT] Recieve Connect packet! Sending username " << std::endl;
 
+		sf::Packet packet;
 		packet << NetworkValues::CONNECT << username << renderSocket.getLocalPort() << serverTime;
 		controlSocket.send(packet);
 
@@ -103,7 +101,7 @@ void Client::SetupClient()
 	sf::Time tickTime = sf::Time::Zero;
 	sf::Clock stepClock, tickClock;
 
-	while (!mWaitingThreadEnd)
+	while (!dontExecuteClient)
 	{
 		if (game->window->isOpen())
 		{
@@ -256,7 +254,8 @@ void Client::ReceiveUdpPacket()
 
 				BulletMessage incomingBulletMessage;
 
-				packet >> incomingBulletMessage.bulletID 
+				packet >> incomingBulletMessage.playerNumber
+					>> incomingBulletMessage.bulletID 
 					>> incomingBulletMessage.position.x >> incomingBulletMessage.position.y 
 					>> incomingBulletMessage.time
 					>> incomingBulletMessage.isDead;
@@ -279,7 +278,8 @@ void Client::ReceiveUdpPacket()
 
 				PlayerMessage incomingPlayerMessage;
 
-				packet >> incomingPlayerMessage.playerID
+				packet >> incomingPlayerMessage.playerNumber 
+					>> incomingPlayerMessage.playerID
 					>> incomingPlayerMessage.position.x >> incomingPlayerMessage.position.y
 					>> incomingPlayerMessage.aimAt.x >> incomingPlayerMessage.aimAt.y
 					>> incomingPlayerMessage.health
@@ -303,8 +303,7 @@ void Client::UpdateBullet(BulletMessage bulletMessage)
 		SpawnBullet(bulletMessage);
 	} else {
 		Bullet* bullet = bullets.find(bulletMessage.bulletID)->second;
-
-		sf::Vector2f bulletPos = bullet->shape.getPosition();
+		bullet->playerNumber = bullet->playerNumber;
 		bullet->AddMessage(bulletMessage);		
 		bullet->isDead = bulletMessage.isDead;
 	}
@@ -319,10 +318,9 @@ void Client::UpdatePlayer(PlayerMessage playerMessage)
 	}
 	else {
 		Player* player = players.find(playerMessage.playerID)->second;
-		//player->SetClientMoveTo(pos + velocity);
+		player->playerNumber = playerMessage.playerNumber;
 		player->AddMessage(playerMessage);
 		player->SetClientLookTo(playerMessage.aimAt);
-		//player->velocity = velocity;
 		player->isAttacking = playerMessage.isAttacking;
 		player->isBlocking = playerMessage.isBlocking;
 		player->health = playerMessage.health;
@@ -334,7 +332,7 @@ void Client::UpdatePlayer(PlayerMessage playerMessage)
 
 void Client::SpawnPlayer(PlayerMessage playerMessage)
 {
-	Player* player = new Player();
+	Player* player = new Player(playerMessage.playerNumber);
 
 	player->playerID = playerMessage.playerID;
 	player->shape.setPosition(playerMessage.position);
@@ -345,20 +343,18 @@ void Client::SpawnPlayer(PlayerMessage playerMessage)
 	player->isDead = playerMessage.isDead;
 
 	players.insert(std::make_pair(playerMessage.playerID, player));
-	//pendingPlayerBoxes.insert(std::pair<std::string, PlayerBox*>(playerID, playerBox));
 }
 
 void Client::SpawnBullet(BulletMessage bulletMessage)
 {
-	Bullet* bullet = new Bullet();
-
+	Bullet* bullet = new Bullet(bulletMessage.playerNumber);
+	bullet->playerNumber = bulletMessage.playerNumber;
 	bullet->bulletID = bulletMessage.bulletID;
 	bullet->shape.setPosition(bulletMessage.position);
 	bullet->AddMessage(bulletMessage);
 	bullet->isDead = bulletMessage.isDead;
-	bullets.insert(std::make_pair(bulletMessage.bulletID, bullet));
 
-	//pendingBullets.insert(std::pair<std::string, Bullet*>(bulletID, bullet));
+	bullets.insert(std::make_pair(bulletMessage.bulletID, bullet));
 }
 
 
@@ -373,11 +369,11 @@ void Client::ClientTick(sf::Time)
 
 	ControlMessage controlMessage;
 
-	controlMessage.mousePos == mousePos;
-	controlMessage.isForwardPressed == isForwardPressed;
-	controlMessage.isAttackPressed == isAttackPressed;
-	controlMessage.isBlockPressed == isBlockPressed;
-	controlMessage.atTime == game->gameTime;
+	controlMessage.mousePos = mousePos;
+	controlMessage.isForwardPressed = isForwardPressed;
+	controlMessage.isAttackPressed = isAttackPressed;
+	controlMessage.isBlockPressed = isBlockPressed;
+	controlMessage.atTime = game->gameTime;
 
 	// Send control packet to move object on server
 	packet << NetworkValues::CONTROL << controlMessage.mousePos.x << controlMessage.mousePos.y

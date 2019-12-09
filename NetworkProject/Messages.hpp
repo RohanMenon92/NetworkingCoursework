@@ -6,8 +6,11 @@
 #include <SFML/System.hpp>
 
 /** A position update message. */
-struct PlayerMessage {
+struct PlayerMessage {	
 	/** The object number of this player within the game world. */
+	int playerNumber;
+
+	/** The object name of this player within the game world. */
 	std::string playerID;
 
 	/** The coordinates of this player within the game world. */
@@ -17,7 +20,7 @@ struct PlayerMessage {
 	sf::Vector2f aimAt;
 
 	// player health
-	float health;
+	int health;
 
 	// Is player attacking
 	bool isAttacking;
@@ -35,6 +38,9 @@ struct PlayerMessage {
 
 /** A position update message for bullets. */
 struct BulletMessage {
+	/** The object number of this player within the game world. */
+	int playerNumber;
+
 	/** The object number of this bullet within the game world. */
 	std::string bulletID;
 
@@ -60,3 +66,7 @@ struct ControlMessage {
 	float atTime;
 };
 #endif
+
+// Connect details
+//NetworkValues::CONNECT <<
+//spawnPosition.x << spawnPosition.y << playerNumber << serverTime;

@@ -19,6 +19,8 @@
 class Player
 {
 public:
+	int playerNumber;
+
 	sf::Text healthHolder;
 	sf::Text usernameHolder;
 
@@ -56,8 +58,10 @@ public:
 	sf::Vector2f PredictPosition(float time);
 	void SetAimPos(sf::Vector2f aimAt);
 
-	Player();
+	Player(int playerNumber);
 	virtual ~Player();
+
+	void OnHit();
 
 protected:
 

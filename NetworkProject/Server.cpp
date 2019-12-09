@@ -9,7 +9,7 @@ Server::Server()
 	, m_gameTcpListener()
 	, m_gameUdpSocket()
 	, m_numberOfPlayers(0)
-	, m_maximumPlayersCapacity(4)
+	, m_maximumPlayersCapacity(6)
 {
 }
 
@@ -102,19 +102,20 @@ void Server::HandleIncomingConnections()
 	{
 		std::cout << "[GAME_SERVER] In TCP Listener Accept! ip:" << clientRef->gameTcpSocket.getRemoteAddress() << std::endl;
 
+		clientRef->playerNumber = playerNumber;
 		clientRef->ingame = true;
 		clientRef->gameTcpConnected = true;
 		clientRef->gameTcpSocket.setBlocking(false);
-
 		clientRef->ip = clientRef->gameTcpSocket.getRemoteAddress();
-		//clientRef->gameUdpSocket =
-
 		sf::Vector2f spawnPosition = renderGame.OnSocketConnect(clientRef);
 
 		sf::Packet packet;
-		// Send current server time for synronization
+		// Send spawn position, playerNumber and current server time for synronization
 		packet << NetworkValues::CONNECT << 
-			spawnPosition.x << spawnPosition.y << serverTime;
+			spawnPosition.x << spawnPosition.y << playerNumber << serverTime;
+
+		// Increment playerNumber
+		playerNumber++;
 
 		std::cout << "[GAME_SERVER] Sent CONNECT packet " << clientRef->gameTcpSocket.getRemoteAddress() << std::endl;
 		clientRef->gameTcpSocket.send(packet);
@@ -149,6 +150,7 @@ void Server::SendUDPUpdateToClient(ClientRef* client) {
 			//std::cout << "[SEND DATA] Sending out PLAYER " << player->playerID << " packet:" << client->lastPacketIdSent << std::endl;
 
 			PlayerMessage playerMessage;
+			playerMessage.playerNumber = player->playerNumber;
 			playerMessage.playerID = player->playerID;
 			playerMessage.position = player->shape.getPosition();
 			playerMessage.aimAt = player->aimAt;
@@ -159,6 +161,7 @@ void Server::SendUDPUpdateToClient(ClientRef* client) {
 			playerMessage.isDead = player->isDead;
 
 			packet << NetworkValues::RENDER_PLAYER << packetId
+				<< playerMessage.playerNumber
 				<< playerMessage.playerID
 				<< playerMessage.position.x << playerMessage.position.y
 				<< playerMessage.aimAt.x << playerMessage.aimAt.y
@@ -188,12 +191,14 @@ void Server::SendUDPUpdateToClient(ClientRef* client) {
 			//std::cout << "[SEND DATA] Sending out bullet " << bullet->bulletID << "  packetID:" << client->lastPacketIdSent << std::endl;
 
 			BulletMessage bulletMessage;
+			bulletMessage.playerNumber = bullet->playerNumber;
 			bulletMessage.bulletID = bullet->bulletID;
 			bulletMessage.isDead = bullet->isDead;
 			bulletMessage.position = bullet->shape.getPosition();
 			bulletMessage.time = serverTime - client->latencyTime;
 
 			packet << NetworkValues::RENDER_BULLET << packetId
+				<< bulletMessage.playerNumber
 				<< bulletMessage.bulletID
 				<< bulletMessage.position.x << bulletMessage.position.y
 				<< bulletMessage.time
