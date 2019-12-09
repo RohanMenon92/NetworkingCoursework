@@ -3,8 +3,8 @@
 Client::Client(std::string newUsername)
 	: isConnected(false)
 	, dontExecuteClient(false)
-	, controlSocket()
-	, renderSocket()
+	, controlTCPSocket()
+	, renderUDPSocket()
 	, udpPacketNumberReceive(0)
 	, lossPacket(0)
 	, timeOutTimer(sf::Time::Zero)
@@ -16,11 +16,13 @@ Client::Client(std::string newUsername)
 
 	game.reset(new Game());
 	
-	renderSocket.bind(ServerConfiguration::GameClientUDPPort);
-	renderSocket.setBlocking(false);
+	// Bind rendering udp socket to any port, 
+	// TCP will notify server of udp port to store it 
+	renderUDPSocket.bind(sf::Socket::AnyPort);
+	renderUDPSocket.setBlocking(false);
 
 	// Initially blocking
-	controlSocket.setBlocking(true);
+	controlTCPSocket.setBlocking(true);
 
 	ConnectToServer();
 	SetupClient();
@@ -33,7 +35,7 @@ Client::~Client()
 	sf::Packet packet;
 	packet << NetworkValues::DISCONNECT << username;
 
-	controlSocket.send(packet);
+	controlTCPSocket.send(packet);
 
 	dontExecuteClient = true;
 }
@@ -46,7 +48,7 @@ void Client::InitGame(sf::Vector2f startPos, float startTime)
 {
 	// Bind UDP Socket
 	isConnected = true;
-	controlSocket.setBlocking(false);
+	controlTCPSocket.setBlocking(false);
 
 	// Create game elements and start receving control
 	game->initWindow();
@@ -56,7 +58,7 @@ void Client::InitGame(sf::Vector2f startPos, float startTime)
 void Client::ConnectToServer()
 {
 	// Connect to TCP
-	sf::TcpSocket::Status status = controlSocket.connect(serverIP, ServerConfiguration::GameTCPPort, sf::seconds(5.f));
+	sf::TcpSocket::Status status = controlTCPSocket.connect(serverIP, ServerConfiguration::GameTCPPort, sf::seconds(5.f));
 
 	if (status != sf::Socket::Done)
 	{
@@ -67,7 +69,7 @@ void Client::ConnectToServer()
 
 	sf::Packet connectPacket;
 	// Listen and recieve generated position
-	if (controlSocket.receive(connectPacket) == sf::TcpSocket::Status::Done) {
+	if (controlTCPSocket.receive(connectPacket) == sf::TcpSocket::Status::Done) {
 
 		unsigned int netCode(0);
 		connectPacket >> netCode;
@@ -85,8 +87,8 @@ void Client::ConnectToServer()
 		std::cout << "[GAME_CLIENT] Recieve Connect packet! Sending username " << std::endl;
 
 		sf::Packet packet;
-		packet << NetworkValues::CONNECT << username << renderSocket.getLocalPort() << serverTime;
-		controlSocket.send(packet);
+		packet << NetworkValues::CONNECT << username << renderUDPSocket.getLocalPort() << serverTime;
+		controlTCPSocket.send(packet);
 
 		// Start the game based on server set positions and initial serverTime
 		InitGame(startPos, serverTime);
@@ -227,7 +229,7 @@ void Client::ReceiveUdpPacket()
 	sf::IpAddress ip = ServerConfiguration::HostIPAddress;
 	unsigned short int remotePort(ServerConfiguration::ServerUDPPort);
 
-	if (renderSocket.receive(packet, ip, remotePort) == sf::Socket::Status::Done)
+	if (renderUDPSocket.receive(packet, ip, remotePort) == sf::Socket::Status::Done)
 	{
 		timeOutTimer = sf::Time::Zero;
 		unsigned int netCode(0);
@@ -384,5 +386,5 @@ void Client::ClientTick(sf::Time)
 
 	// Game time can be used to look at histories for further checks
 
-	controlSocket.send(packet);
+	controlTCPSocket.send(packet);
 }

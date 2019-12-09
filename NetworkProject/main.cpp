@@ -21,18 +21,18 @@ int main(int argc, void** argv[])
 		netState.clear();
 		std::cin >> netState;
 		if (netState == "s" || netState == "S") {
+			// Server does not need instancing as there should be only 1 locally
 			Server server;
 			server.Init();
-			//defined = true;
 		}
 		else if (netState == "c" || netState == "C") {
 			std::string username;
 			std::cout << "What's your username?\n";
 			std::cin >> username;
 
-			Client client(username);
-			client.Init();
-			//defined = true;
+			// Client needs instancing as there can be multiple locally
+			Client* client = new Client(username);
+			client->Init();
 		}
 		std::cout << "Invalid input, try again. \n";
 	} while (!defined);

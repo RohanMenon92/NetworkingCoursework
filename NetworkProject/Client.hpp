@@ -34,8 +34,8 @@ private:
 	//sf::Thread mThread;
 	sf::Clock mClock;
 
-	sf::UdpSocket renderSocket;
-	sf::TcpSocket controlSocket;
+	sf::UdpSocket renderUDPSocket;
+	sf::TcpSocket controlTCPSocket;
 
 	sf::Clock dtClock;
 	float dt;
