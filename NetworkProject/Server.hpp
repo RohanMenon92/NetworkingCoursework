@@ -17,9 +17,7 @@
 #include <NetworkValues.hpp>
 
 #include <RenderGame.hpp>
-#include <ResourceHolder.hpp>
-#include <ResourceIdentifier.hpp>
-#include <PlayerBox.hpp>
+#include <Player.hpp>
 
 /*
 	Server class.
@@ -30,10 +28,10 @@ class Server
 public:
 	float serverTime = 0.f;
 
-	int playerNumber = 0;
+	int currPlayerNumber = 0;
 
 	// Constructor.
-	Server();
+	Server(std::string ipHost);
 
 	// Destructor.
 	virtual ~Server();

@@ -1,4 +1,4 @@
-#include "PlayerBox.hpp"
+#include "Player.hpp"
 
 Player::Player(int playerNumber) :
 	isAttacking(false)

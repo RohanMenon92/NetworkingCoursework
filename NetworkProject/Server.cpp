@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server()
+Server::Server(std::string ipHost)
 	: mThread(&Server::ExecutionThread, this)
 	, m_isRunning(true)
 	, mWaitingThreadEnd(false)
@@ -102,7 +102,7 @@ void Server::HandleIncomingConnections()
 	{
 		std::cout << "[GAME_SERVER] In TCP Listener Accept! Remote Host:" << clientRef->gameTcpSocket.getRemoteAddress() << ":" << clientRef->gameTcpSocket.getRemotePort() << std::endl;
 
-		clientRef->playerNumber = playerNumber;
+		clientRef->playerNumber = currPlayerNumber;
 		clientRef->ingame = true;
 		clientRef->gameTcpConnected = true;
 		clientRef->gameTcpSocket.setBlocking(false);
@@ -112,10 +112,10 @@ void Server::HandleIncomingConnections()
 		sf::Packet packet;
 		// Send spawn position, playerNumber and current server time for synronization
 		packet << NetworkValues::CONNECT << 
-			spawnPosition.x << spawnPosition.y << playerNumber << serverTime;
+			spawnPosition.x << spawnPosition.y << currPlayerNumber << serverTime;
 
 		// Increment playerNumber
-		playerNumber++;
+		currPlayerNumber++;
 
 		std::cout << "[GAME_SERVER] Sent CONNECT packet " << clientRef->gameTcpSocket.getRemoteAddress() << std::endl;
 		clientRef->gameTcpSocket.send(packet);
@@ -268,6 +268,7 @@ void Server::DisconnectPlayer(ClientRef* clientRef, std::string reason)
 		});
 
 		clientRef->ingame = false;
+		clientRef->playerBox->isDead = true;
 
 		//// Erase the client.
 		delete clientRef;

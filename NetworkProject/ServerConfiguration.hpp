@@ -5,7 +5,7 @@
 #include <SFML/System.hpp>
 #include <SFML/Network.hpp>
 
-#include <PlayerBox.hpp>
+#include <Player.hpp>
 
 struct ClientRef
 {
@@ -52,7 +52,7 @@ namespace ServerConfiguration
 	const unsigned int ClientTCPPort(21102); // Connects TCP from client port
 	const unsigned int ServerUDPPort(21103); // Connects UDP from server
 	const unsigned int GameClientUDPPort(21104); // Connevts UDP from client
-	const std::string HostIPAddress = "127.0.0.1";
+	const std::string LocalIPAddress = "127.0.0.1";
 } // namespace ServerConfiguration.
 
 #endif // SERVERCONFIGURATION_HPP_INCLUDED

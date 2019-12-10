@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include<ServerConfiguration.hpp>
-#include<PlayerBox.hpp>
+#include<Player.hpp>
 #include<Bullet.hpp>
 
 class RenderGame

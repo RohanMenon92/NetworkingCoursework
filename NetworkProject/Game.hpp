@@ -11,8 +11,7 @@
 
 
 #include <ServerConfiguration.hpp>
-#include <ResourceIdentifier.hpp>
-#include <PlayerBox.hpp>
+#include <Player.hpp>
 #include <Bullet.hpp>
 
 #include <iostream>

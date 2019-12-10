@@ -27,8 +27,11 @@ private:
 
 	sf::Event sfEvent;
 
+	sf::IpAddress serverIP;
+
 	std::string username;
 	bool isConnected;
+
 
 	bool dontExecuteClient;
 	//sf::Thread mThread;
@@ -53,9 +56,6 @@ private:
 
 	sf::Vector2f mousePos;
 
-	// ip of the seveur
-	sf::IpAddress serverIP = ServerConfiguration::HostIPAddress;
-
 	//initialization
 	void ConnectToServer();
 
@@ -76,7 +76,7 @@ public:
 	std::map<std::string, Bullet*> bullets;
 
 	//constructor/destructors
-	Client(std::string newUsername);
+	Client(std::string newUsername, std::string hostIP);
 	virtual ~Client();
 
 	void InitGame(sf::Vector2f startPos, float startTime);

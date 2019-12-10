@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(std::string newUsername)
+Client::Client(std::string newUsername, std::string hostIP)
 	: isConnected(false)
 	, dontExecuteClient(false)
 	, controlTCPSocket()
@@ -11,6 +11,7 @@ Client::Client(std::string newUsername)
 	, players()
 	, bullets()
 	, username(newUsername)
+	, serverIP(hostIP)
 {
 	fontText.loadFromFile("Antonio.ttf");
 
@@ -98,7 +99,7 @@ void Client::SetupClient()
 {
 	sf::Time stepInterval = sf::seconds(1.f / 60.f);
 	sf::Time stepTime = sf::Time::Zero;
-	sf::Time tickInterval = sf::seconds(1.f / 60.f);
+	sf::Time tickInterval = sf::seconds(1.f / 30.f);
 	sf::Time tickTime = sf::Time::Zero;
 	sf::Clock stepClock, tickClock;
 
@@ -227,7 +228,7 @@ void Client::ReceiveUdpPacket()
 	timeOutTimer += sf::seconds(1 / 60.f);
 	sf::Packet packet;
 	packet.clear();
-	sf::IpAddress ip = ServerConfiguration::HostIPAddress;
+	sf::IpAddress ip = serverIP;
 	unsigned short int remotePort(ServerConfiguration::ServerUDPPort);
 
 	if (renderUDPSocket.receive(packet, ip, remotePort) == sf::Socket::Status::Done)
@@ -238,8 +239,8 @@ void Client::ReceiveUdpPacket()
 
 		unsigned long long number;
 		packet >> number;
-		//std::cout << "[Client RECIEVE UDP SOCKET] Number received : " << number << " Number Already received:" << udpPacketNumberReceive << std::endl;
 
+		//std::cout << "[Client RECIEVE UDP SOCKET] Number received : " << number << " Number Already received:" << udpPacketNumberReceive << std::endl;
 		if (number >= udpPacketNumberReceive) {
 			udpPacketNumberReceive = number;
 			switch (netCode)

@@ -112,6 +112,7 @@ void RenderGame::Update(sf::Time dt)
 						// Destroy Bullet
 						bullet->isDead = true;
 						if (player->isBlocking) {
+							// Create bounce for bullet
 							// Create new reflected bullet to prevent UDP interpolation issues
 							player->bulletsFired++;
 							Bullet* bulletInstance = new Bullet(player->playerNumber);
@@ -155,7 +156,7 @@ void RenderGame::Update(sf::Time dt)
 			GameConstants::playerSpeed * dt.asSeconds()));
 
 		// Fire Bullet If Possible
-		if (player->isAttacking && player->canAttackTimer == 0.f) {
+		if (!player->isBlocking && player->isAttacking && player->canAttackTimer == 0.f) {
 			player->canAttackTimer = GameConstants::playerReloadSpeed;
 
 			player->bulletsFired++;

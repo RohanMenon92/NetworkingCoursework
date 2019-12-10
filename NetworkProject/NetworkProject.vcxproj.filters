@@ -48,11 +48,11 @@
     <ClCompile Include="RenderGame.cpp">
       <Filter>Source Files\Server</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerBox.cpp">
-      <Filter>Source Files\Server</Filter>
-    </ClCompile>
     <ClCompile Include="Bullet.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\GameElements</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Source Files\GameElements</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,18 +63,6 @@
       <Filter>Header Files\Server</Filter>
     </ClInclude>
     <ClInclude Include="Player.hpp">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceIdentifier.hpp">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="SoundPlayer.hpp">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceHolder.hpp">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="MusicPlayer.hpp">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
     <ClInclude Include="ServerConfiguration.hpp">

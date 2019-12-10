@@ -149,7 +149,7 @@
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PlayerBox.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="RenderGame.cpp" />
     <ClCompile Include="Server.cpp" />
   </ItemGroup>
@@ -160,16 +160,12 @@
     <ClInclude Include="GameConstants.hpp" />
     <ClInclude Include="Messages.hpp" />
     <ClInclude Include="MultiThreading.hpp" />
-    <ClInclude Include="MusicPlayer.hpp" />
     <ClInclude Include="NetworkValues.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="PlayerBox.hpp" />
     <ClInclude Include="RenderGame.hpp" />
-    <ClInclude Include="ResourceHolder.hpp" />
-    <ClInclude Include="ResourceIdentifier.hpp" />
     <ClInclude Include="Server.hpp" />
     <ClInclude Include="ServerConfiguration.hpp" />
-    <ClInclude Include="SoundPlayer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
