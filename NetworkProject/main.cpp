@@ -33,7 +33,7 @@ int main(int argc, void** argv[])
 			std::cout << "Is server local? y/n \n";
 			std::string isServerLocal;
 			std::cin >> isServerLocal;
-			if (isServerLocal == "y" || "Y") {
+			if (isServerLocal == "y" || isServerLocal == "Y") {
 				ip = ServerConfiguration::LocalIPAddress;
 			}
 			else {
