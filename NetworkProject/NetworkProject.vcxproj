@@ -162,7 +162,6 @@
     <ClInclude Include="MultiThreading.hpp" />
     <ClInclude Include="NetworkValues.hpp" />
     <ClInclude Include="Player.hpp" />
-    <ClInclude Include="PlayerBox.hpp" />
     <ClInclude Include="RenderGame.hpp" />
     <ClInclude Include="Server.hpp" />
     <ClInclude Include="ServerConfiguration.hpp" />

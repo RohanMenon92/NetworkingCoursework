@@ -62,9 +62,6 @@
     <ClInclude Include="Server.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
-    <ClInclude Include="Player.hpp">
-      <Filter>Header Files\Client</Filter>
-    </ClInclude>
     <ClInclude Include="ServerConfiguration.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
@@ -77,20 +74,20 @@
     <ClInclude Include="RenderGame.hpp">
       <Filter>Header Files\Server</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerBox.hpp">
-      <Filter>Header Files\Server</Filter>
-    </ClInclude>
     <ClInclude Include="Game.hpp">
       <Filter>Header Files\Client</Filter>
-    </ClInclude>
-    <ClInclude Include="Bullet.hpp">
-      <Filter>Header Files\Server</Filter>
     </ClInclude>
     <ClInclude Include="Messages.hpp">
       <Filter>Header Files\Client</Filter>
     </ClInclude>
+    <ClInclude Include="Player.hpp">
+      <Filter>Header Files\GameElements</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.hpp">
+      <Filter>Header Files\GameElements</Filter>
+    </ClInclude>
     <ClInclude Include="GameConstants.hpp">
-      <Filter>Header Files\Server</Filter>
+      <Filter>Header Files\GameElements</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
