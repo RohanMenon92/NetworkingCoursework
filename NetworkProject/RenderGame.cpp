@@ -106,17 +106,20 @@ void RenderGame::Update(sf::Time dt)
 				{
 					// Check if same player fired
 					if (bullet->playerNumber != player->playerNumber) {
-						std::cout << "BulletNumber:" << bullet->playerNumber << " PlayerNumber:" << player->playerNumber<< std::endl;
-
 						// Not same player do damage and check shield
+						std::cout << "RENDER HIT REGISTERED :: BulletNumber:" << bullet->playerNumber << " PlayerNumber:" << player->playerNumber<< std::endl;
+
+						// Destroy Bullet
+						bullet->isDead = true;
 						if (player->isBlocking) {
-							bullet->isDead = true;
-
+							// Create new reflected bullet to prevent UDP interpolation issues
+							player->bulletsFired++;
 							Bullet* bulletInstance = new Bullet(player->playerNumber);
+							bulletInstance->bulletID = player->playerID + std::to_string(player->bulletsFired);
 
-							// Get direction from center to bullet position aim is towards
+							// Get direction from center of player to bullet position aim is towards
 							sf::Vector2f aimDir = bullet->shape.getPosition() - player->shape.getPosition();
-							// Normalize the direction
+							// Normalize the direction as direction to reflect bullet to
 							sf::Vector2f newHeading = aimDir / sqrt(pow(aimDir.x, 2) + pow(aimDir.y, 2));
 
 							bulletInstance->shape.setPosition(player->shape.getPosition()
@@ -124,13 +127,11 @@ void RenderGame::Update(sf::Time dt)
 							bulletInstance->velocity = newHeading * GameConstants::bulletMaxSpeed;
 							bulletInstance->bulletID = player->playerID + std::to_string(player->bulletsFired);
 							bullets.push_back(bulletInstance);
-
-							break;
+							continue;
 						}
 						else {
 							// DamagePlayer
 							player->OnHit();
-							bullet->isDead = true;
 						}
 					}
 				}
@@ -138,7 +139,7 @@ void RenderGame::Update(sf::Time dt)
 		}
 
 
-		// Set Position Over Time
+		// Set Aim Position Over Time, regular interpolation
 		player->aimShape.setPosition(Interpolate2f(player->aimShape.getPosition(), 
 			player->aimAt, 
 			GameConstants::playerAimSpeed * dt.asSeconds()));
@@ -148,12 +149,14 @@ void RenderGame::Update(sf::Time dt)
 			GetRotationAim(player->aimShape.getPosition(), player->aimAt),
 			GameConstants::playerRotateSpeed * dt.asSeconds()));
 
+		// Interpolate towards velocity
 		player->shape.setPosition(Interpolate2f(player->shape.getPosition(),
 			player->shape.getPosition() + player->velocity,
 			GameConstants::playerSpeed * dt.asSeconds()));
+
 		// Fire Bullet If Possible
 		if (player->isAttacking && player->canAttackTimer == 0.f) {
-			player->canAttackTimer = ServerConfiguration::PlayerReloadSpeed;
+			player->canAttackTimer = GameConstants::playerReloadSpeed;
 
 			player->bulletsFired++;
 			Bullet* bulletInstance = new Bullet(player->playerNumber);

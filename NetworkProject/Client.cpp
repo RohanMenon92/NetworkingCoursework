@@ -18,6 +18,7 @@ Client::Client(std::string newUsername)
 	
 	// Bind rendering udp socket to any port, 
 	// TCP will notify server of udp port to store it 
+	// if needed to listen on server
 	renderUDPSocket.bind(sf::Socket::AnyPort);
 	renderUDPSocket.setBlocking(false);
 

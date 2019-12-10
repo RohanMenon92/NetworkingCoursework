@@ -100,7 +100,7 @@ void Server::HandleIncomingConnections()
 
 	if (m_gameTcpListener.accept(clientRef->gameTcpSocket) == sf::TcpListener::Done)
 	{
-		std::cout << "[GAME_SERVER] In TCP Listener Accept! ip:" << clientRef->gameTcpSocket.getRemoteAddress() << std::endl;
+		std::cout << "[GAME_SERVER] In TCP Listener Accept! Remote Host:" << clientRef->gameTcpSocket.getRemoteAddress() << ":" << clientRef->gameTcpSocket.getRemotePort() << std::endl;
 
 		clientRef->playerNumber = playerNumber;
 		clientRef->ingame = true;
@@ -367,8 +367,21 @@ void Server::ReceiveThroughTCP()
 					float returnedServerTime;
 					packet >> username >> udpPort >> returnedServerTime;
 
-					// Store username, udpPort for client and latency based on roundtrip communication
+					//bool usernameExists;
+					//for (auto usernameItr(m_clients.begin()); usernameItr != m_clients.end();)
+					//{
+					//	ClientRef* uClient = (*usernameItr);
+
+					//	if (uClient->clientName == username) {
+					//		usernameExists = true;
+					//	}
+					//}
+
+					//// Store username as new if it already exists
+					//username = username + (usernameExists ? "New" : "");
+
 					client->clientName = username;
+					// Store udpPort for client and latency based on roundtrip communication
 					client->udpPort = udpPort;
 					client->latencyTime = (serverTime - returnedServerTime)/2;
 

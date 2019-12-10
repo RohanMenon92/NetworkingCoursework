@@ -62,9 +62,12 @@ void Game::ProcessInput()
 		mousePos.y = mousePos.y;
 	}
 
-	isForwardPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
-	isAttackPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-	isBlockPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
+	isForwardPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::W) 
+		|| sf::Mouse::isButtonPressed(sf::Mouse::Button::Right);
+	isAttackPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space)
+		|| sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+	isBlockPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::S)
+		|| sf::Mouse::isButtonPressed(sf::Mouse::Button::Middle);
 }
 
 void Game::UpdateSFMLEvents()

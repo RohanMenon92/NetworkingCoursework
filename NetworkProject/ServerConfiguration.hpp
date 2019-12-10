@@ -52,7 +52,6 @@ namespace ServerConfiguration
 	const unsigned int ClientTCPPort(21102); // Connects TCP from client port
 	const unsigned int ServerUDPPort(21103); // Connects UDP from server
 	const unsigned int GameClientUDPPort(21104); // Connevts UDP from client
-	const float PlayerReloadSpeed = 5.f;
 	const std::string HostIPAddress = "127.0.0.1";
 } // namespace ServerConfiguration.
 
