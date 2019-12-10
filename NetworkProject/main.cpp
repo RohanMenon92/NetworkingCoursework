@@ -32,7 +32,6 @@ int main(int argc, void** argv[])
 
 			// Client needs instancing as there can be multiple locally
 			Client* client = new Client(username);
-			client->Init();
 		}
 		std::cout << "Invalid input, try again. \n";
 	} while (!defined);

@@ -159,7 +159,7 @@ void Game::Render(std::map<std::string, Player*>& playerPointer, std::map<std::s
 		}
 	}
 
-	////// Render Player Bullets
+	// Render Player Bullets
 	for (auto bulletPair : (*bulletsPtr))
 	{
 		Bullet* bullet = bulletPair.second;

@@ -333,21 +333,19 @@ void Server::ReceiveThroughTCP()
 	// Check if we received any TCP packet.
 	for (auto clientItr(m_clients.begin()); clientItr != m_clients.end();)
 	{
-		// Alias.
 		ClientRef* client = (*clientItr);
 		Player* playerBox = client->playerBox;
 
 		// Timeout only if in game.
 		//std::cout << "[GAME_SERVER] IS CLIENT IN GAME " << client->clientName << std::endl;
-
 		if (client->ingame)
 		{
 			bool deletedClient(false);
 
 			// Check if we received a packet.
-			sf::Packet packet;
+			//std::cout << "[GAME_SERVER] CLIENT IS IN GAME RECIEVING " << client->clientName << std::endl;
 
-			//std::cout << "[GAME_SERVER] CLIENT IS IN GAME RECIEVING " << client->gameTcpSocket.isBlocking() << std::endl;
+			sf::Packet packet;
 
 			while (client->gameTcpSocket.receive(packet) == sf::TcpSocket::Status::Done)
 			{
@@ -360,7 +358,7 @@ void Server::ReceiveThroughTCP()
 
 				switch (networkCode)
 				{
-				case NetworkValues::CONNECT:
+				case NetworkValues::RETURN_CONNECT:
 				{
 					std::string username;
 					unsigned short udpPort;
@@ -384,7 +382,6 @@ void Server::ReceiveThroughTCP()
 					// Store udpPort for client and latency based on roundtrip communication
 					client->udpPort = udpPort;
 					client->latencyTime = (serverTime - returnedServerTime)/2;
-
 					renderGame.OnPlayerConnect(username, playerBox);
 					// Make connection to udp non blocking
 					client->gameUdpSocket.setBlocking(false);
@@ -420,13 +417,12 @@ void Server::ReceiveThroughTCP()
 						//	<< " KeyValues::" << isForwardPressed << isAttackPressed << isBlockPressed
 						//	<< std::endl;
 
-						// Update client Latency here as well? How?
+						// Update client Latency here as well? How? Using atTime?
 
 						// Set looking at position and interaction properties
 						playerBox->isMovingForward = controlMessage.isForwardPressed;
 						playerBox->isAttacking = controlMessage.isAttackPressed;
 						playerBox->isBlocking = controlMessage.isBlockPressed;
-
 						playerBox->SetAimPos(controlMessage.mousePos);
 					}
 				}
@@ -449,6 +445,8 @@ void Server::ReceiveThroughTCP()
 
 void Server::ReceiveThroughUDP()
 {
+	// NOTHING HERE AS OF NOW
+
 	// Check if we received any UDP packet.
 	//sf::Packet packet;
 	//sf::IpAddress ip;

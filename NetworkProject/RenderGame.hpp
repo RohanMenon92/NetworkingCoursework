@@ -13,9 +13,6 @@
 #include<PlayerBox.hpp>
 #include<Bullet.hpp>
 
-#include <MusicPlayer.hpp>
-#include <SoundPlayer.hpp>
-
 class RenderGame
 {
 public:
@@ -35,7 +32,6 @@ public:
 	void run();
 	sf::Vector2f OnSocketConnect(ClientRef* clientRef);
 	void OnPlayerConnect(std::string username, Player* playerBox);
-	void OnPlayerAimMove(std::string username, sf::Vector2f position);
 	void OnPlayerDisconnect(std::string username);
 
 protected:

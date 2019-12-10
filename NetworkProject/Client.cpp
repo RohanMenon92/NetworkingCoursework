@@ -41,10 +41,6 @@ Client::~Client()
 	dontExecuteClient = true;
 }
 
-void Client::Init()
-{
-}
-
 void Client::InitGame(sf::Vector2f startPos, float startTime)
 {
 	// Bind UDP Socket
@@ -83,12 +79,14 @@ void Client::ConnectToServer()
 		// On Connect packet, extract server defined spawn position and player number
 		sf::Vector2f startPos;
 		float serverTime;
-		connectPacket >> startPos.x >> startPos.y >> this->playerNumber >> serverTime;
+		int playerNumber;
+		connectPacket >> startPos.x >> startPos.y >> playerNumber >> serverTime;
 
+		this->playerNumber = playerNumber;
 		std::cout << "[GAME_CLIENT] Recieve Connect packet! Sending username " << std::endl;
 
 		sf::Packet packet;
-		packet << NetworkValues::CONNECT << username << renderUDPSocket.getLocalPort() << serverTime;
+		packet << NetworkValues::RETURN_CONNECT << username << renderUDPSocket.getLocalPort() << serverTime;
 		controlTCPSocket.send(packet);
 
 		// Start the game based on server set positions and initial serverTime
@@ -163,6 +161,8 @@ void Client::ReceiveInput()
 
 void Client::ReceiveTcpPacket()
 {
+	// NOTHING HERE FOR NOW
+
 	//sf::Packet packet;
 	//while (controlSocket.receive(packet) == sf::Socket::Status::Done)
 	//{
@@ -314,8 +314,6 @@ void Client::UpdateBullet(BulletMessage bulletMessage)
 
 void Client::UpdatePlayer(PlayerMessage playerMessage)
 {
-	//std::cout << "[CLIENT UPDATE PLAYER] ABOUT TO ITERATE " << std::endl;
-
 	if (players.count(playerMessage.playerID) == 0) {
 		SpawnPlayer(playerMessage);
 	}
@@ -363,11 +361,10 @@ void Client::SpawnBullet(BulletMessage bulletMessage)
 
 void Client::ClientTick(sf::Time)
 {
-	//std::cout << "IN Client Tick" << std::endl;
 	if (!isConnected) {
 		return;
 	}
-	// Send tick to server tcp
+	// Send CONTROL packet to server tcp
 	sf::Packet packet;
 
 	ControlMessage controlMessage;
@@ -378,7 +375,6 @@ void Client::ClientTick(sf::Time)
 	controlMessage.isBlockPressed = isBlockPressed;
 	controlMessage.atTime = game->gameTime;
 
-	// Send control packet to move object on server
 	packet << NetworkValues::CONTROL << controlMessage.mousePos.x << controlMessage.mousePos.y
 		<< controlMessage.isForwardPressed 
 		<< controlMessage.isAttackPressed 
@@ -386,6 +382,5 @@ void Client::ClientTick(sf::Time)
 		<< controlMessage.atTime;
 
 	// Game time can be used to look at histories for further checks
-
 	controlTCPSocket.send(packet);
 }

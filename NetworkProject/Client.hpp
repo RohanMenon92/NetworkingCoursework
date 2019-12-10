@@ -78,7 +78,7 @@ public:
 	//constructor/destructors
 	Client(std::string newUsername);
 	virtual ~Client();
-	void Init();
+
 	void InitGame(sf::Vector2f startPos, float startTime);
 };
 #endif
