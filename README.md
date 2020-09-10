@@ -1,8 +1,9 @@
 # NetworkingCoursework:
 Networking coursework during my course at abertay where I created a game where you can fire at a target and use a shield to bounce back shots.
 
-Video Link:
-https://youtu.be/0DpAjEppBFA
+Video Link: https://youtu.be/0DpAjEppBFA
+Report: https://github.com/RohanMenon92/NetworkingCoursework/blob/master/1901120-NetworkGameReport.pdf
+
 
 ## Description:
 The game is a simple game where a server needs to be run first and then multiple clients can connect to it. 
