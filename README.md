@@ -23,3 +23,8 @@ Then open another instance of the application and put in ‘c’ and input a use
 - W or Right Click: Move the player towards current mouse position
 - S or Middle Mouse: Put a shield and prevent player movement
 - SPACE or Left Click: Fire a bullet towards the mouse position
+
+## Screenshots
+![Server and log](https://github.com/RohanMenon92/NetworkingCoursework/blob/master/Screenshots/ServerLog.PNG)
+
+![Clients and log](https://github.com/RohanMenon92/NetworkingCoursework/blob/master/Screenshots/Clients.PNG)
